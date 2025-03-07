@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página do Usuário</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Firebase -->
+    <!-- Firebase e Google Maps -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
@@ -51,6 +51,55 @@
             });
         }
 
+        // Função para calcular o valor da entrega
+        function calcularValorEntrega(distancia) {
+            const valorBase = 10.00; // Valor inicial
+            const distanciaKm = parseFloat(distancia);
+            if (distanciaKm <= 4) {
+                return valorBase;
+            } else {
+                return valorBase + (distanciaKm - 4) * 2.00; // R$ 2,00 por km adicional
+            }
+        }
+
+        // Função para autocompletar endereço
+        function initAutocomplete() {
+            const inputColeta = document.getElementById('ruaColetaPedido');
+            const inputEntrega = document.getElementById('ruaEntregaPedido');
+
+            const autocompleteColeta = new google.maps.places.Autocomplete(inputColeta);
+            const autocompleteEntrega = new google.maps.places.Autocomplete(inputEntrega);
+
+            // Preenche os campos automaticamente ao selecionar um endereço
+            autocompleteColeta.addListener('place_changed', () => {
+                const place = autocompleteColeta.getPlace();
+                document.getElementById('numeroColetaPedido').value = ''; // Limpa o número
+                document.getElementById('bairroColetaPedido').value = ''; // Limpa o bairro
+                place.address_components.forEach(component => {
+                    if (component.types.includes('street_number')) {
+                        document.getElementById('numeroColetaPedido').value = component.long_name;
+                    }
+                    if (component.types.includes('sublocality') || component.types.includes('neighborhood')) {
+                        document.getElementById('bairroColetaPedido').value = component.long_name;
+                    }
+                });
+            });
+
+            autocompleteEntrega.addListener('place_changed', () => {
+                const place = autocompleteEntrega.getPlace();
+                document.getElementById('numeroEntregaPedido').value = ''; // Limpa o número
+                document.getElementById('bairroEntregaPedido').value = ''; // Limpa o bairro
+                place.address_components.forEach(component => {
+                    if (component.types.includes('street_number')) {
+                        document.getElementById('numeroEntregaPedido').value = component.long_name;
+                    }
+                    if (component.types.includes('sublocality') || component.types.includes('neighborhood')) {
+                        document.getElementById('bairroEntregaPedido').value = component.long_name;
+                    }
+                });
+            });
+        }
+
         // Função para adicionar pedido
         document.getElementById('formPedido').addEventListener('submit', async function(event) {
             event.preventDefault();
@@ -62,21 +111,9 @@
             const numeroEntrega = document.getElementById('numeroEntregaPedido').value;
             const bairroEntrega = document.getElementById('bairroEntregaPedido').value;
 
-            let valor;
-            switch (bairroEntrega) {
-                case 'Centro':
-                    valor = 10.00;
-                    break;
-                case 'São Pedro':
-                case 'Santa Luzia':
-                case 'Bom Pastor':
-                case 'Esplanada':
-                case 'Martins':
-                    valor = 25.00;
-                    break;
-                default:
-                    valor = 0.00;
-            }
+            // Calcula a distância usando a API do Google Maps Distance Matrix
+            const distancia = await calcularDistancia(`${ruaColeta} ${numeroColeta}, ${bairroColeta}`, `${ruaEntrega} ${numeroEntrega}, ${bairroEntrega}`);
+            const valor = calcularValorEntrega(distancia);
 
             const pedido = {
                 descricao: descricao,
@@ -97,9 +134,37 @@
             document.getElementById('formPedido').reset();
         });
 
+        // Função para calcular a distância
+        async function calcularDistancia(origem, destino) {
+            const service = new google.maps.DistanceMatrixService();
+            return new Promise((resolve, reject) => {
+                service.getDistanceMatrix(
+                    {
+                        origins: [origem],
+                        destinations: [destino],
+                        travelMode: 'DRIVING',
+                        unitSystem: google.maps.UnitSystem.METRIC,
+                    },
+                    (response, status) => {
+                        if (status === 'OK') {
+                            const distancia = response.rows[0].elements[0].distance.value / 1000; // Distância em km
+                            resolve(distancia);
+                        } else {
+                            reject('Erro ao calcular distância: ' + status);
+                        }
+                    }
+                );
+            });
+        }
+
         // Carrega os pedidos ao abrir a página
         carregarPedidos();
+
+        // Inicializa o autocompletar do Google Maps
+        window.initAutocomplete = initAutocomplete;
     </script>
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBLrhgPGGZIQLgUgoU-cuXj0_QskZv-4bk&libraries=places&callback=initAutocomplete" async defer></script>
 </head>
 <body class="user-page">
     <div class="container">
@@ -117,28 +182,12 @@
             <h4>Endereço de Coleta</h4>
             <input type="text" id="ruaColetaPedido" placeholder="Rua" required>
             <input type="text" id="numeroColetaPedido" placeholder="Número" required>
-            <select id="bairroColetaPedido" required>
-                <option value="">Selecione o Bairro de Coleta</option>
-                <option value="Centro">Centro - R$ 10,00</option>
-                <option value="São Pedro">São Pedro - R$ 25,00</option>
-                <option value="Santa Luzia">Santa Luzia - R$ 25,00</option>
-                <option value="Bom Pastor">Bom Pastor - R$ 25,00</option>
-                <option value="Esplanada">Esplanada - R$ 25,00</option>
-                <option value="Martins">Reduto - R$ 25,00</option>
-            </select>
+            <input type="text" id="bairroColetaPedido" placeholder="Bairro" required>
 
             <h4>Endereço de Entrega</h4>
             <input type="text" id="ruaEntregaPedido" placeholder="Rua" required>
             <input type="text" id="numeroEntregaPedido" placeholder="Número" required>
-            <select id="bairroEntregaPedido" required>
-                <option value="">Selecione o Bairro de Entrega</option>
-                <option value="Centro">Centro - R$ 10,00</option>
-                <option value="São Pedro">São Pedro - R$ 25,00</option>
-                <option value="Santa Luzia">Santa Luzia - R$ 25,00</option>
-                <option value="Bom Pastor">Bom Pastor - R$ 25,00</option>
-                <option value="Esplanada">Esplanada - R$ 25,00</option>
-                <option value="Martins">Martins - R$ 25,00</option>
-            </select>
+            <input type="text" id="bairroEntregaPedido" placeholder="Bairro" required>
 
             <button type="submit">Adicionar Pedido</button>
         </form>
