@@ -156,7 +156,7 @@
         }
 
         // Função para adicionar pedido
-        document.getElementById('formPedido').addEventListener('submit', async function(event) {
+        document.getElementById('btnAdicionarPedido').addEventListener('click', async function(event) {
             event.preventDefault();
             const descricao = document.getElementById('descricao').value;
             const cepColeta = document.getElementById('cepColeta').value;
@@ -246,7 +246,7 @@
             <p id="valorCalculado" style="font-weight: bold; margin-top: 10px;"></p>
 
             <!-- Botão para adicionar pedido (inicialmente oculto) -->
-            <button type="submit" id="btnAdicionarPedido" style="display: none;">Adicionar Pedido</button>
+            <button type="button" id="btnAdicionarPedido" style="display: none;">Adicionar Pedido</button>
         </form>
 
         <h3>Seus Pedidos</h3>
