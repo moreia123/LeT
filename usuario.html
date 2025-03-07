@@ -146,6 +146,9 @@
 
                 // Exibe o valor calculado
                 document.getElementById('valorCalculado').textContent = `Valor da entrega: R$ ${valor.toFixed(2)}`;
+
+                // Mostra o botão "Adicionar Pedido"
+                document.getElementById('btnAdicionarPedido').style.display = 'block';
             } catch (error) {
                 console.error('Erro ao calcular valor:', error);
                 alert('Ocorreu um erro ao calcular o valor. Verifique o console para mais detalhes.');
@@ -203,6 +206,7 @@
             carregarPedidos(); // Recarrega a lista de pedidos
             document.getElementById('formPedido').reset(); // Limpa o formulário
             document.getElementById('valorCalculado').textContent = ''; // Limpa o valor calculado
+            document.getElementById('btnAdicionarPedido').style.display = 'none'; // Oculta o botão novamente
         });
 
         // Carrega os pedidos ao abrir a página
@@ -241,8 +245,8 @@
             <button type="button" onclick="calcularValor()">Calcular Valor</button>
             <p id="valorCalculado" style="font-weight: bold; margin-top: 10px;"></p>
 
-            <!-- Botão para adicionar pedido -->
-            <button type="submit">Adicionar Pedido</button>
+            <!-- Botão para adicionar pedido (inicialmente oculto) -->
+            <button type="submit" id="btnAdicionarPedido" style="display: none;">Adicionar Pedido</button>
         </form>
 
         <h3>Seus Pedidos</h3>
