@@ -8,6 +8,11 @@
 </head>
 <body class="admin-panel">
     <div class="container">
+        <!-- Imagem no topo -->
+        <div class="logo-container">
+            <img src="Logo.jpeg" alt="Logo" class="logo">
+        </div>
+
         <h2>Painel do Administrador</h2>
         <p>Bem-vindo ao painel de controle.</p>
 
@@ -17,6 +22,8 @@
                 <tr>
                     <th>ID</th>
                     <th>Descrição</th>
+                    <th>Localização</th>
+                    <th>Valor</th>
                     <th>Status</th>
                     <th>Ação</th>
                 </tr>
@@ -31,6 +38,7 @@
             <input type="text" id="adminNome" placeholder="Nome do Administrador" required>
             <input type="text" id="adminUsuario" placeholder="Usuário" required>
             <input type="password" id="adminSenha" placeholder="Senha" required>
+            <input type="password" id="senhaMestre" placeholder="Senha Mestre" required>
             <button type="submit">Cadastrar Administrador</button>
         </form>
 
@@ -52,6 +60,9 @@
     </div>
 
     <script>
+        // Senha mestre para cadastrar administradores
+        const SENHA_MESTRE = "1208";
+
         // Cria um administrador padrão se não existir
         function criarAdminPadrao() {
             const admins = JSON.parse(localStorage.getItem('administradores')) || [];
@@ -75,6 +86,8 @@
                 const row = tabela.insertRow();
                 row.insertCell().textContent = index + 1;
                 row.insertCell().textContent = pedido.descricao;
+                row.insertCell().textContent = pedido.localizacao;
+                row.insertCell().textContent = `R$ ${pedido.valor.toFixed(2)}`;
                 row.insertCell().textContent = pedido.status;
 
                 // Botão para marcar como entregue
@@ -155,6 +168,13 @@
             const nome = document.getElementById('adminNome').value;
             const usuario = document.getElementById('adminUsuario').value;
             const senha = document.getElementById('adminSenha').value;
+            const senhaMestre = document.getElementById('senhaMestre').value;
+
+            // Verifica a senha mestre
+            if (senhaMestre !== SENHA_MESTRE) {
+                alert('Senha mestre incorreta!');
+                return;
+            }
 
             const admins = JSON.parse(localStorage.getItem('administradores')) || [];
 
