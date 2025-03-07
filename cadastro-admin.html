@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Administrador</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="cadastro-admin">
+    <div class="container">
+        <h2>Cadastro de Administrador</h2>
+        <p>Por favor, cadastre um administrador para acessar o sistema.</p>
+
+        <form id="formCadastroAdmin">
+            <input type="text" id="adminNome" placeholder="Nome do Administrador" required>
+            <input type="text" id="adminUsuario" placeholder="Usuário" required>
+            <input type="password" id="adminSenha" placeholder="Senha" required>
+            <input type="password" id="senhaMestre" placeholder="Senha Mestre" required>
+            <button type="submit">Cadastrar</button>
+        </form>
+    </div>
+
+    <script>
+        // Senha mestre para cadastrar administradores
+        const SENHA_MESTRE = "1208";
+
+        // Função para cadastrar novo administrador
+        document.getElementById('formCadastroAdmin').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const nome = document.getElementById('adminNome').value;
+            const usuario = document.getElementById('adminUsuario').value;
+            const senha = document.getElementById('adminSenha').value;
+            const senhaMestre = document.getElementById('senhaMestre').value;
+
+            // Verifica a senha mestre
+            if (senhaMestre !== SENHA_MESTRE) {
+                alert('Senha mestre incorreta!');
+                return;
+            }
+
+            const admins = JSON.parse(localStorage.getItem('administradores')) || [];
+
+            // Verifica se o usuário já existe
+            const usuarioExiste = admins.some(admin => admin.usuario === usuario);
+            if (usuarioExiste) {
+                alert('Usuário já cadastrado!');
+                return;
+            }
+
+            const novoAdmin = { nome, usuario, senha };
+            admins.push(novoAdmin);
+            localStorage.setItem('administradores', JSON.stringify(admins));
+
+            alert('Administrador cadastrado com sucesso!');
+            window.location.href = 'login-admin.html'; // Redireciona para o login
+        });
+    </script>
+</body>
+</html>
