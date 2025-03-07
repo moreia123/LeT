@@ -79,6 +79,47 @@
             return data.routes[0].distance / 1000; // Distância em km
         }
 
+        // Função para buscar endereço com Nominatim
+        async function buscarEndereco(query) {
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`);
+            const data = await response.json();
+            return data;
+        }
+
+        // Função para calcular e exibir o valor da entrega
+        async function calcularValor() {
+            const ruaColeta = document.getElementById('ruaColetaPedido').value;
+            const numeroColeta = document.getElementById('numeroColetaPedido').value;
+            const bairroColeta = document.getElementById('bairroColetaPedido').value;
+            const ruaEntrega = document.getElementById('ruaEntregaPedido').value;
+            const numeroEntrega = document.getElementById('numeroEntregaPedido').value;
+            const bairroEntrega = document.getElementById('bairroEntregaPedido').value;
+
+            if (!ruaColeta || !numeroColeta || !bairroColeta || !ruaEntrega || !numeroEntrega || !bairroEntrega) {
+                alert('Preencha todos os campos de endereço.');
+                return;
+            }
+
+            // Busca as coordenadas dos endereços
+            const enderecoColeta = await buscarEndereco(`${ruaColeta} ${numeroColeta}, ${bairroColeta}`);
+            const enderecoEntrega = await buscarEndereco(`${ruaEntrega} ${numeroEntrega}, ${bairroEntrega}`);
+
+            if (enderecoColeta.length === 0 || enderecoEntrega.length === 0) {
+                alert('Endereço de coleta ou entrega não encontrado.');
+                return;
+            }
+
+            const origem = { lat: parseFloat(enderecoColeta[0].lat), lng: parseFloat(enderecoColeta[0].lon) };
+            const destino = { lat: parseFloat(enderecoEntrega[0].lat), lng: parseFloat(enderecoEntrega[0].lon) };
+
+            // Calcula a distância
+            const distancia = await calcularDistancia(origem, destino);
+            const valor = calcularValorEntrega(distancia);
+
+            // Exibe o valor calculado
+            document.getElementById('valorCalculado').textContent = `Valor da entrega: R$ ${valor.toFixed(2)}`;
+        }
+
         // Função para adicionar pedido
         document.getElementById('formPedido').addEventListener('submit', async function(event) {
             event.preventDefault();
@@ -123,14 +164,8 @@
             alert('Pedido adicionado com sucesso!');
             carregarPedidos(); // Recarrega a lista de pedidos
             document.getElementById('formPedido').reset(); // Limpa o formulário
+            document.getElementById('valorCalculado').textContent = ''; // Limpa o valor calculado
         });
-
-        // Função para buscar endereço com Nominatim
-        async function buscarEndereco(query) {
-            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`);
-            const data = await response.json();
-            return data;
-        }
 
         // Inicializa o mapa
         const map = L.map('map').setView([-20.3194, -40.3378], 13); // Coordenadas de Vitória, ES
@@ -180,6 +215,11 @@
             <input type="text" id="numeroEntregaPedido" placeholder="Número" required>
             <input type="text" id="bairroEntregaPedido" placeholder="Bairro" required>
 
+            <!-- Botão para calcular o valor -->
+            <button type="button" onclick="calcularValor()">Calcular Valor</button>
+            <p id="valorCalculado" style="font-weight: bold; margin-top: 10px;"></p>
+
+            <!-- Botão para adicionar pedido -->
             <button type="submit">Adicionar Pedido</button>
         </form>
 
