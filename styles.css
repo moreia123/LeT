@@ -76,3 +76,33 @@ a {
 a:hover {
     text-decoration: underline;
 }
+
+/* Tabelas */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #444;
+    text-align: left;
+}
+
+th {
+    background-color: #bb86fc; /* Roxo */
+    color: #1a1a1a;
+}
+
+/* Estilo para o contêiner da logo */
+.logo-container {
+    text-align: center; /* Centraliza a imagem horizontalmente */
+    margin-bottom: 20px; /* Espaçamento abaixo da imagem */
+}
+
+/* Estilo para a logo */
+.logo {
+    max-width: 200px; /* Define a largura máxima da imagem */
+    height: auto; /* Mantém a proporção da imagem */
+}
