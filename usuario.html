@@ -18,14 +18,34 @@
 
         <h3>Calcular Custo de Entrega</h3>
         <form id="formEntrega">
-            <label for="localizacao">Selecione a Localização:</label>
-            <select id="localizacao" required>
-                <option value="">Selecione...</option>
-                <option value="Centro de Manhuaçu">Centro de Manhuaçu - R$ 10,00</option>
-                <option value="Centro de Reduto">Centro de Reduto - R$ 25,00</option>
-                <option value="Zona Rural">Zona Rural (Até 10KM do Centro) - R$ 25,00</option>
-                <option value="Outros">Para demais localizações, consultar valores</option>
+            <h4>Endereço de Coleta</h4>
+            <input type="text" id="ruaColeta" placeholder="Rua" required>
+            <input type="text" id="numeroColeta" placeholder="Número" required>
+            <select id="bairroColeta" required>
+                <option value="">Selecione o Bairro de Coleta</option>
+                <option value="Centro">Centro - R$ 10,00</option>
+                <option value="São Pedro">São Pedro - R$ 25,00</option>
+                <option value="Santa Luzia">Santa Luzia - R$ 25,00</option>
+                <option value="Bom Pastor">Bom Pastor - R$ 25,00</option>
+                <option value="Esplanada">Esplanada - R$ 25,00</option>
+                <option value="Martins">Martins - R$ 25,00</option>
+                <!-- Adicione mais bairros conforme necessário -->
             </select>
+
+            <h4>Endereço de Entrega</h4>
+            <input type="text" id="ruaEntrega" placeholder="Rua" required>
+            <input type="text" id="numeroEntrega" placeholder="Número" required>
+            <select id="bairroEntrega" required>
+                <option value="">Selecione o Bairro de Entrega</option>
+                <option value="Centro">Centro - R$ 10,00</option>
+                <option value="São Pedro">São Pedro - R$ 25,00</option>
+                <option value="Santa Luzia">Santa Luzia - R$ 25,00</option>
+                <option value="Bom Pastor">Bom Pastor - R$ 25,00</option>
+                <option value="Esplanada">Esplanada - R$ 25,00</option>
+                <option value="Martins">Martins - R$ 25,00</option>
+                <!-- Adicione mais bairros conforme necessário -->
+            </select>
+
             <button type="submit">Calcular Custo</button>
         </form>
 
@@ -39,7 +59,8 @@
                 <tr>
                     <th>ID</th>
                     <th>Descrição</th>
-                    <th>Localização</th>
+                    <th>Local de Coleta</th>
+                    <th>Local de Entrega</th>
                     <th>Valor</th>
                     <th>Status</th>
                 </tr>
@@ -52,13 +73,34 @@
         <h3>Adicionar Novo Pedido</h3>
         <form id="formPedido">
             <input type="text" id="descricao" placeholder="Descrição do Pedido" required>
-            <select id="localizacaoPedido" required>
-                <option value="">Selecione a Localização</option>
-                <option value="Centro de Manhuaçu">Centro de Manhuaçu - R$ 10,00</option>
-                <option value="Centro de Reduto">Centro de Reduto - R$ 25,00</option>
-                <option value="Zona Rural">Zona Rural (Até 10KM do Centro) - R$ 25,00</option>
-                <option value="Outros">Para demais localizações, consultar valores</option>
+            <h4>Endereço de Coleta</h4>
+            <input type="text" id="ruaColetaPedido" placeholder="Rua" required>
+            <input type="text" id="numeroColetaPedido" placeholder="Número" required>
+            <select id="bairroColetaPedido" required>
+                <option value="">Selecione o Bairro de Coleta</option>
+                <option value="Centro">Centro - R$ 10,00</option>
+                <option value="São Pedro">São Pedro - R$ 25,00</option>
+                <option value="Santa Luzia">Santa Luzia - R$ 25,00</option>
+                <option value="Bom Pastor">Bom Pastor - R$ 25,00</option>
+                <option value="Esplanada">Esplanada - R$ 25,00</option>
+                <option value="Martins">Martins - R$ 25,00</option>
+                <!-- Adicione mais bairros conforme necessário -->
             </select>
+
+            <h4>Endereço de Entrega</h4>
+            <input type="text" id="ruaEntregaPedido" placeholder="Rua" required>
+            <input type="text" id="numeroEntregaPedido" placeholder="Número" required>
+            <select id="bairroEntregaPedido" required>
+                <option value="">Selecione o Bairro de Entrega</option>
+                <option value="Centro">Centro - R$ 10,00</option>
+                <option value="São Pedro">São Pedro - R$ 25,00</option>
+                <option value="Santa Luzia">Santa Luzia - R$ 25,00</option>
+                <option value="Bom Pastor">Bom Pastor - R$ 25,00</option>
+                <option value="Esplanada">Esplanada - R$ 25,00</option>
+                <option value="Martins">Martins - R$ 25,00</option>
+                <!-- Adicione mais bairros conforme necessário -->
+            </select>
+
             <button type="submit">Adicionar Pedido</button>
         </form>
 
@@ -80,7 +122,8 @@
                 const row = tabela.insertRow();
                 row.insertCell().textContent = index + 1;
                 row.insertCell().textContent = pedido.descricao;
-                row.insertCell().textContent = pedido.localizacao;
+                row.insertCell().textContent = `${pedido.ruaColeta}, ${pedido.numeroColeta} - ${pedido.bairroColeta}`;
+                row.insertCell().textContent = `${pedido.ruaEntrega}, ${pedido.numeroEntrega} - ${pedido.bairroEntrega}`;
                 row.insertCell().textContent = `R$ ${pedido.valor.toFixed(2)}`;
                 row.insertCell().textContent = pedido.status;
             });
@@ -90,25 +133,38 @@
         document.getElementById('formPedido').addEventListener('submit', function(event) {
             event.preventDefault();
             const descricao = document.getElementById('descricao').value;
-            const localizacao = document.getElementById('localizacaoPedido').value;
+            const ruaColeta = document.getElementById('ruaColetaPedido').value;
+            const numeroColeta = document.getElementById('numeroColetaPedido').value;
+            const bairroColeta = document.getElementById('bairroColetaPedido').value;
+            const ruaEntrega = document.getElementById('ruaEntregaPedido').value;
+            const numeroEntrega = document.getElementById('numeroEntregaPedido').value;
+            const bairroEntrega = document.getElementById('bairroEntregaPedido').value;
 
-            // Define o valor com base na localização
+            // Define o valor com base no bairro de entrega
             let valor;
-            switch (localizacao) {
-                case 'Centro de Manhuaçu':
+            switch (bairroEntrega) {
+                case 'Centro':
                     valor = 10.00;
                     break;
-                case 'Centro de Reduto':
-                case 'Zona Rural':
+                case 'São Pedro':
+                case 'Santa Luzia':
+                case 'Bom Pastor':
+                case 'Esplanada':
+                case 'Martins':
                     valor = 25.00;
                     break;
                 default:
-                    valor = 0.00; // Para "Outros"
+                    valor = 0.00; // Para bairros não listados
             }
 
             const pedido = {
                 descricao: descricao,
-                localizacao: localizacao,
+                ruaColeta: ruaColeta,
+                numeroColeta: numeroColeta,
+                bairroColeta: bairroColeta,
+                ruaEntrega: ruaEntrega,
+                numeroEntrega: numeroEntrega,
+                bairroEntrega: bairroEntrega,
                 valor: valor,
                 status: 'Pendente'
             };
@@ -119,37 +175,40 @@
 
             alert('Pedido adicionado com sucesso!');
             carregarPedidos(); // Atualiza a lista de pedidos
-            document.getElementById('descricao').value = ''; // Limpa o campo de descrição
+            document.getElementById('formPedido').reset(); // Limpa o formulário
         });
 
-        // Função para calcular o custo com base na localização
+        // Função para calcular o custo com base no bairro de entrega
         document.getElementById('formEntrega').addEventListener('submit', function(event) {
             event.preventDefault();
-            const localizacao = document.getElementById('localizacao').value;
+            const bairroEntrega = document.getElementById('bairroEntrega').value;
 
             let valor;
-            switch (localizacao) {
-                case 'Centro de Manhuaçu':
+            switch (bairroEntrega) {
+                case 'Centro':
                     valor = 10.00;
                     break;
-                case 'Centro de Reduto':
-                case 'Zona Rural':
+                case 'São Pedro':
+                case 'Santa Luzia':
+                case 'Bom Pastor':
+                case 'Esplanada':
+                case 'Martins':
                     valor = 25.00;
                     break;
                 default:
-                    valor = 0.00; // Para "Outros"
+                    valor = 0.00; // Para bairros não listados
             }
 
             const resultadoDiv = document.getElementById('resultadoEntrega');
             if (valor > 0) {
                 resultadoDiv.innerHTML = `
-                    <p>Localização: ${localizacao}</p>
+                    <p>Bairro de Entrega: ${bairroEntrega}</p>
                     <p>Custo da Entrega: R$ ${valor.toFixed(2)}</p>
                 `;
             } else {
                 resultadoDiv.innerHTML = `
-                    <p>Localização: ${localizacao}</p>
-                    <p>Para demais localizações, consultar valores.</p>
+                    <p>Bairro de Entrega: ${bairroEntrega}</p>
+                    <p>Para este bairro, consulte valores.</p>
                 `;
             }
         });
