@@ -81,11 +81,12 @@
                 return null;
             }
 
-            return {
-                rua: data.logradouro,
-                bairro: data.bairro,
-                cidade: data.localidade
-            };
+            // Preenche os campos de endereço
+            document.getElementById(`rua${tipo}`).value = data.logradouro;
+            document.getElementById(`bairro${tipo}`).value = data.bairro;
+            document.getElementById(`cidade${tipo}`).value = data.localidade;
+
+            return data;
         }
 
         // Função para buscar coordenadas com Nominatim
@@ -120,8 +121,8 @@
             }
 
             // Busca as coordenadas dos endereços
-            const coordenadasColeta = await buscarCoordenadas(`${enderecoColeta.rua} ${numeroColeta}, ${enderecoColeta.cidade}`);
-            const coordenadasEntrega = await buscarCoordenadas(`${enderecoEntrega.rua} ${numeroEntrega}, ${enderecoEntrega.cidade}`);
+            const coordenadasColeta = await buscarCoordenadas(`${enderecoColeta.logradouro} ${numeroColeta}, ${enderecoColeta.localidade}`);
+            const coordenadasEntrega = await buscarCoordenadas(`${enderecoEntrega.logradouro} ${numeroEntrega}, ${enderecoEntrega.localidade}`);
 
             if (!coordenadasColeta || !coordenadasEntrega) {
                 alert('Endereço de coleta ou entrega não encontrado.');
@@ -155,8 +156,8 @@
             }
 
             // Busca as coordenadas dos endereços
-            const coordenadasColeta = await buscarCoordenadas(`${enderecoColeta.rua} ${numeroColeta}, ${enderecoColeta.cidade}`);
-            const coordenadasEntrega = await buscarCoordenadas(`${enderecoEntrega.rua} ${numeroEntrega}, ${enderecoEntrega.cidade}`);
+            const coordenadasColeta = await buscarCoordenadas(`${enderecoColeta.logradouro} ${numeroColeta}, ${enderecoColeta.localidade}`);
+            const coordenadasEntrega = await buscarCoordenadas(`${enderecoEntrega.logradouro} ${numeroEntrega}, ${enderecoEntrega.localidade}`);
 
             if (!coordenadasColeta || !coordenadasEntrega) {
                 alert('Endereço de coleta ou entrega não encontrado.');
@@ -169,14 +170,14 @@
 
             const pedido = {
                 descricao: descricao,
-                ruaColeta: enderecoColeta.rua,
+                ruaColeta: enderecoColeta.logradouro,
                 numeroColeta: numeroColeta,
                 bairroColeta: enderecoColeta.bairro,
-                cidadeColeta: enderecoColeta.cidade,
-                ruaEntrega: enderecoEntrega.rua,
+                cidadeColeta: enderecoColeta.localidade,
+                ruaEntrega: enderecoEntrega.logradouro,
                 numeroEntrega: numeroEntrega,
                 bairroEntrega: enderecoEntrega.bairro,
-                cidadeEntrega: enderecoEntrega.cidade,
+                cidadeEntrega: enderecoEntrega.localidade,
                 valor: valor,
                 status: 'Pendente',
                 userId: auth.currentUser.uid
@@ -209,10 +210,16 @@
 
             <h4>Endereço de Coleta</h4>
             <input type="text" id="cepColeta" placeholder="CEP" required>
+            <input type="text" id="ruaColeta" placeholder="Rua" readonly>
+            <input type="text" id="bairroColeta" placeholder="Bairro" readonly>
+            <input type="text" id="cidadeColeta" placeholder="Cidade" readonly>
             <input type="text" id="numeroColeta" placeholder="Número" required>
 
             <h4>Endereço de Entrega</h4>
             <input type="text" id="cepEntrega" placeholder="CEP" required>
+            <input type="text" id="ruaEntrega" placeholder="Rua" readonly>
+            <input type="text" id="bairroEntrega" placeholder="Bairro" readonly>
+            <input type="text" id="cidadeEntrega" placeholder="Cidade" readonly>
             <input type="text" id="numeroEntrega" placeholder="Número" required>
 
             <!-- Botão para calcular o valor -->
