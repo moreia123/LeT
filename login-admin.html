@@ -5,6 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login do Administrador</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHVoDPPaxYjkjlVfWd5HFYZiORGbR8h0Q",
+            authDomain: "let-log-5faef.firebaseapp.com",
+            projectId: "let-log-5faef",
+            storageBucket: "let-log-5faef.firebasestorage.app",
+            messagingSenderId: "818297522117",
+            appId: "1:818297522117:web:cb311458fb531b273f6dac",
+            measurementId: "G-6XVWCM8MNT"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        document.getElementById('loginAdminForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const usuario = document.getElementById('adminUsuario').value;
+            const senha = document.getElementById('adminSenha').value;
+
+            signInWithEmailAndPassword(auth, usuario + '@dominio.com', senha)
+                .then((userCredential) => {
+                    alert('Login realizado com sucesso!');
+                    window.location.href = 'admin.html';
+                })
+                .catch((error) => {
+                    alert('Usuário ou senha incorretos!');
+                });
+        });
+    </script>
 </head>
 <body class="login-admin">
     <div class="container">
@@ -22,40 +55,5 @@
             <button type="submit">Entrar</button>
         </form>
     </div>
-
-    <script>
-        // Verifica se o administrador existe
-        document.getElementById('loginAdminForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const usuario = document.getElementById('adminUsuario').value;
-            const senha = document.getElementById('adminSenha').value;
-
-            const admins = JSON.parse(localStorage.getItem('administradores')) || [];
-            const admin = admins.find(admin => admin.usuario === usuario && admin.senha === senha);
-
-            if (admin) {
-                alert('Login realizado com sucesso!');
-                window.location.href = 'admin.html'; // Redireciona para o painel do administrador
-            } else {
-                alert('Usuário ou senha incorretos!');
-            }
-        });
-
-        // Cria um administrador padrão se não existir nenhum
-        function criarAdminPadrao() {
-            const admins = JSON.parse(localStorage.getItem('administradores')) || [];
-            if (admins.length === 0) {
-                const adminPadrao = { nome: "Ailton", usuario: "Ailton", senha: "123" };
-                admins.push(adminPadrao);
-                localStorage.setItem('administradores', JSON.stringify(admins));
-            }
-        }
-
-        // Verifica se é a primeira vez que o sistema é acessado
-        const admins = JSON.parse(localStorage.getItem('administradores')) || [];
-        if (admins.length === 0) {
-            window.location.href = 'cadastro-admin.html'; // Redireciona para o cadastro
-        }
-    </script>
 </body>
 </html>
