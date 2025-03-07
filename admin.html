@@ -9,7 +9,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-        import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+        import { getFirestore, collection, query, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCHVoDPPaxYjkjlVfWd5HFYZiORGbR8h0Q",
@@ -54,7 +54,7 @@
                 if (pedido.status === 'Pendente') {
                     const botao = document.createElement('button');
                     botao.textContent = 'Marcar como Entregue';
-                    botao.addEventListener('click', () => marcarComoEntregue(doc.id));
+                    botao.addEventListener('click', () => marcarComoEntregue(doc.id, pedido.userId));
                     cellAcao.appendChild(botao);
                 } else {
                     cellAcao.textContent = 'Entregue';
@@ -63,11 +63,40 @@
         }
 
         // Função para marcar pedido como entregue
-        async function marcarComoEntregue(pedidoId) {
-            await updateDoc(doc(db, 'pedidos', pedidoId), {
-                status: 'Entregue'
+        async function marcarComoEntregue(pedidoId, userId) {
+            try {
+                // Atualiza o status do pedido
+                await updateDoc(doc(db, 'pedidos', pedidoId), {
+                    status: 'Entregue'
+                });
+
+                // Envia confirmação por e-mail (requer Firebase Cloud Functions)
+                await enviarEmailConfirmacao(userId, pedidoId);
+
+                alert('Pedido marcado como entregue e e-mail enviado!');
+                carregarPedidosAdmin(); // Recarrega a lista de pedidos
+            } catch (error) {
+                console.error('Erro ao marcar como entregue:', error);
+                alert('Erro ao marcar como entregue.');
+            }
+        }
+
+        // Função para enviar e-mail de confirmação (requer Firebase Cloud Functions)
+        async function enviarEmailConfirmacao(userId, pedidoId) {
+            // Aqui você precisa integrar com o Firebase Cloud Functions
+            // Exemplo de chamada para uma função HTTP do Firebase:
+            const functionUrl = 'https://sua-funcao-cloud-functions.com/enviarEmail';
+            const response = await fetch(functionUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId, pedidoId }),
             });
-            carregarPedidosAdmin();
+
+            if (!response.ok) {
+                throw new Error('Erro ao enviar e-mail.');
+            }
         }
 
         // Carrega os pedidos ao abrir a página
