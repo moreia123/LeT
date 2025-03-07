@@ -5,201 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel do Administrador</title>
     <link rel="stylesheet" href="styles.css">
-</head>
-<body class="admin-panel">
-    <div class="container">
-        <!-- Imagem no topo -->
-        <div class="logo-container">
-            <img src="Logo.jpeg" alt="Logo" class="logo">
-        </div>
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+        import { getFirestore, collection, query, where, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
-        <h2>Painel do Administrador</h2>
-        <p>Bem-vindo ao painel de controle.</p>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHVoDPPaxYjkjlVfWd5HFYZiORGbR8h0Q",
+            authDomain: "let-log-5faef.firebaseapp.com",
+            projectId: "let-log-5faef",
+            storageBucket: "let-log-5faef.firebasestorage.app",
+            messagingSenderId: "818297522117",
+            appId: "1:818297522117:web:cb311458fb531b273f6dac",
+            measurementId: "G-6XVWCM8MNT"
+        };
 
-        <h3>Todos os Pedidos</h3>
-        <table id="tabelaPedidosAdmin">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Descrição</th>
-                    <th>Localização</th>
-                    <th>Valor</th>
-                    <th>Status</th>
-                    <th>Ação</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Pedidos serão inseridos aqui via JavaScript -->
-            </tbody>
-        </table>
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-        <h3>Cadastrar Novo Administrador</h3>
-        <form id="formAdmin">
-            <input type="text" id="adminNome" placeholder="Nome do Administrador" required>
-            <input type="text" id="adminUsuario" placeholder="Usuário" required>
-            <input type="password" id="adminSenha" placeholder="Senha" required>
-            <input type="password" id="senhaMestre" placeholder="Senha Mestre" required>
-            <button type="submit">Cadastrar Administrador</button>
-        </form>
-
-        <h3>Administradores Cadastrados</h3>
-        <table id="tabelaAdmins">
-            <thead>
-                <tr>
-                    <th>Nome</th>
-                    <th>Usuário</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Administradores serão inseridos aqui via JavaScript -->
-            </tbody>
-        </table>
-
-        <a href="index.html">Voltar para a Página Inicial</a>
-    </div>
-
-    <script>
-        // Senha mestre para cadastrar administradores
-        const SENHA_MESTRE = "1208";
-
-        // Cria um administrador padrão se não existir
-        function criarAdminPadrao() {
-            const admins = JSON.parse(localStorage.getItem('administradores')) || [];
-            const adminPadrao = { nome: "Ailton", usuario: "Ailton", senha: "123" };
-
-            // Verifica se o admin padrão já existe
-            const adminExiste = admins.some(admin => admin.usuario === adminPadrao.usuario);
-            if (!adminExiste) {
-                admins.push(adminPadrao);
-                localStorage.setItem('administradores', JSON.stringify(admins));
+        // Verifica se o usuário está logado
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = 'login-admin.html';
             }
-        }
+        });
 
         // Função para carregar pedidos
-        function carregarPedidosAdmin() {
-            const pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+        async function carregarPedidosAdmin() {
             const tabela = document.getElementById('tabelaPedidosAdmin').getElementsByTagName('tbody')[0];
-            tabela.innerHTML = ''; // Limpa a tabela antes de carregar os pedidos
+            tabela.innerHTML = '';
 
-            pedidos.forEach((pedido, index) => {
+            const q = query(collection(db, 'pedidos'));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc, index) => {
+                const pedido = doc.data();
                 const row = tabela.insertRow();
                 row.insertCell().textContent = index + 1;
                 row.insertCell().textContent = pedido.descricao;
-                row.insertCell().textContent = pedido.localizacao;
-                row.insertCell().textContent = `R$ ${pedido.valor.toFixed(2)}`;
-                row.insertCell().textContent = pedido.status;
-
-                // Botão para marcar como entregue
-                const cellAcao = row.insertCell();
-                if (pedido.status === 'Pendente') {
-                    const botao = document.createElement('button');
-                    botao.textContent = 'Marcar como Entregue';
-                    botao.addEventListener('click', () => marcarComoEntregue(index));
-                    cellAcao.appendChild(botao);
-                } else {
-                    cellAcao.textContent = 'Entregue';
-                }
-            });
-        }
-
-        // Função para marcar pedido como entregue
-        function marcarComoEntregue(index) {
-            const pedidos = JSON.parse(localStorage.getItem('pedidos'));
-            pedidos[index].status = 'Entregue';
-            localStorage.setItem('pedidos', JSON.stringify(pedidos));
-            carregarPedidosAdmin(); // Atualiza a lista de pedidos
-        }
-
-        // Função para carregar administradores
-        function carregarAdministradores() {
-            const admins = JSON.parse(localStorage.getItem('administradores')) || [];
-            const tabela = document.getElementById('tabelaAdmins').getElementsByTagName('tbody')[0];
-            tabela.innerHTML = ''; // Limpa a tabela antes de carregar os administradores
-
-            admins.forEach((admin, index) => {
-                const row = tabela.insertRow();
-                row.insertCell().textContent = admin.nome;
-                row.insertCell().textContent = admin.usuario;
-
-                // Botões para editar e excluir
-                const cellAcoes = row.insertCell();
-                const botaoEditar = document.createElement('button');
-                botaoEditar.textContent = 'Editar';
-                botaoEditar.addEventListener('click', () => editarAdmin(index));
-                cellAcoes.appendChild(botaoEditar);
-
-                const botaoExcluir = document.createElement('button');
-                botaoExcluir.textContent = 'Excluir';
-                botaoExcluir.addEventListener('click', () => excluirAdmin(index));
-                cellAcoes.appendChild(botaoExcluir);
-            });
-        }
-
-        // Função para editar administrador
-        function editarAdmin(index) {
-            const admins = JSON.parse(localStorage.getItem('administradores'));
-            const admin = admins[index];
-
-            const novoNome = prompt("Editar Nome:", admin.nome);
-            const novoUsuario = prompt("Editar Usuário:", admin.usuario);
-            const novaSenha = prompt("Editar Senha:", admin.senha);
-
-            if (novoNome && novoUsuario && novaSenha) {
-                admin.nome = novoNome;
-                admin.usuario = novoUsuario;
-                admin.senha = novaSenha;
-                localStorage.setItem('administradores', JSON.stringify(admins));
-                carregarAdministradores(); // Atualiza a lista de administradores
-            }
-        }
-
-        // Função para excluir administrador
-        function excluirAdmin(index) {
-            const admins = JSON.parse(localStorage.getItem('administradores'));
-            admins.splice(index, 1); // Remove o administrador
-            localStorage.setItem('administradores', JSON.stringify(admins));
-            carregarAdministradores(); // Atualiza a lista de administradores
-        }
-
-        // Função para cadastrar novo administrador
-        document.getElementById('formAdmin').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const nome = document.getElementById('adminNome').value;
-            const usuario = document.getElementById('adminUsuario').value;
-            const senha = document.getElementById('adminSenha').value;
-            const senhaMestre = document.getElementById('senhaMestre').value;
-
-            // Verifica a senha mestre
-            if (senhaMestre !== SENHA_MESTRE) {
-                alert('Senha mestre incorreta!');
-                return;
-            }
-
-            const admins = JSON.parse(localStorage.getItem('administradores')) || [];
-
-            // Verifica se o usuário já existe
-            const usuarioExiste = admins.some(admin => admin.usuario === usuario);
-            if (usuarioExiste) {
-                alert('Usuário já cadastrado!');
-                return;
-            }
-
-            const novoAdmin = { nome, usuario, senha };
-            admins.push(novoAdmin);
-            localStorage.setItem('administradores', JSON.stringify(admins));
-
-            alert('Administrador cadastrado com sucesso!');
-            document.getElementById('formAdmin').reset(); // Limpa o formulário
-            carregarAdministradores(); // Atualiza a lista de administradores
-        });
-
-        // Cria o admin padrão ao carregar a página
-        criarAdminPadrao();
-
-        // Carrega os pedidos e administradores ao abrir a página
-        carregarPedidosAdmin();
-        carregarAdministradores();
-    </script>
-</body>
-</html>
+                row.insertCell().textContent = `${pedido.ruaColeta}, ${pedido.numeroColeta} -
