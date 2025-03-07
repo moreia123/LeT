@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Usuário</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHVoDPPaxYjkjlVfWd5HFYZiORGbR8h0Q",
+            authDomain: "let-log-5faef.firebaseapp.com",
+            projectId: "let-log-5faef",
+            storageBucket: "let-log-5faef.firebasestorage.app",
+            messagingSenderId: "818297522117",
+            appId: "1:818297522117:web:cb311458fb531b273f6dac",
+            measurementId: "G-6XVWCM8MNT"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        document.getElementById('formCadastroUsuario').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const nome = document.getElementById('usuarioNome').value;
+            const email = document.getElementById('usuarioEmail').value;
+            const senha = document.getElementById('usuarioSenha').value;
+
+            createUserWithEmailAndPassword(auth, email, senha)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    return setDoc(doc(db, 'usuarios', user.uid), {
+                        nome: nome,
+                        email: email,
+                        senha: senha
+                    });
+                })
+                .then(() => {
+                    alert('Usuário cadastrado com sucesso!');
+                    window.location.href = 'login-usuario.html';
+                })
+                .catch((error) => {
+                    alert('Erro ao cadastrar: ' + error.message);
+                });
+        });
+    </script>
+</head>
+<body class="cadastro-usuario">
+    <div class="container">
+        <!-- Imagem no topo -->
+        <div class="logo-container">
+            <img src="Logo.jpeg" alt="Logo" class="logo">
+        </div>
+
+        <h2>Cadastro de Usuário</h2>
+        <p>Por favor, cadastre-se para acessar o sistema.</p>
+
+        <form id="formCadastroUsuario">
+            <input type="text" id="usuarioNome" placeholder="Nome" required>
+            <input type="email" id="usuarioEmail" placeholder="Email" required>
+            <input type="password" id="usuarioSenha" placeholder="Senha" required>
+            <button type="submit">Cadastrar</button>
+        </form>
+
+        <p>Já tem uma conta? <a href="login-usuario.html">Faça login</a></p>
+    </div>
+</body>
+</html>
