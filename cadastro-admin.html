@@ -5,6 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro de Administrador</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHVoDPPaxYjkjlVfWd5HFYZiORGbR8h0Q",
+            authDomain: "let-log-5faef.firebaseapp.com",
+            projectId: "let-log-5faef",
+            storageBucket: "let-log-5faef.firebasestorage.app",
+            messagingSenderId: "818297522117",
+            appId: "1:818297522117:web:cb311458fb531b273f6dac",
+            measurementId: "G-6XVWCM8MNT"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        document.getElementById('formCadastroAdmin').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const nome = document.getElementById('adminNome').value;
+            const usuario = document.getElementById('adminUsuario').value;
+            const senha = document.getElementById('adminSenha').value;
+            const senhaMestre = document.getElementById('senhaMestre').value;
+
+            const SENHA_MESTRE = "1208";
+            if (senhaMestre !== SENHA_MESTRE) {
+                alert('Senha mestre incorreta!');
+                return;
+            }
+
+            createUserWithEmailAndPassword(auth, usuario + '@dominio.com', senha)
+                .then((userCredential) => {
+                    const user = userCredential.user;
+                    return setDoc(doc(db, 'administradores', user.uid), {
+                        nome: nome,
+                        usuario: usuario,
+                        senha: senha
+                    });
+                })
+                .then(() => {
+                    alert('Administrador cadastrado com sucesso!');
+                    window.location.href = 'login-admin.html';
+                })
+                .catch((error) => {
+                    alert('Erro ao cadastrar: ' + error.message);
+                });
+        });
+    </script>
 </head>
 <body class="cadastro-admin">
     <div class="container">
@@ -24,41 +75,5 @@
             <button type="submit">Cadastrar</button>
         </form>
     </div>
-
-    <script>
-        // Senha mestre para cadastrar administradores
-        const SENHA_MESTRE = "1208";
-
-        // Função para cadastrar novo administrador
-        document.getElementById('formCadastroAdmin').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const nome = document.getElementById('adminNome').value;
-            const usuario = document.getElementById('adminUsuario').value;
-            const senha = document.getElementById('adminSenha').value;
-            const senhaMestre = document.getElementById('senhaMestre').value;
-
-            // Verifica a senha mestre
-            if (senhaMestre !== SENHA_MESTRE) {
-                alert('Senha mestre incorreta!');
-                return;
-            }
-
-            const admins = JSON.parse(localStorage.getItem('administradores')) || [];
-
-            // Verifica se o usuário já existe
-            const usuarioExiste = admins.some(admin => admin.usuario === usuario);
-            if (usuarioExiste) {
-                alert('Usuário já cadastrado!');
-                return;
-            }
-
-            const novoAdmin = { nome, usuario, senha };
-            admins.push(novoAdmin);
-            localStorage.setItem('administradores', JSON.stringify(admins));
-
-            alert('Administrador cadastrado com sucesso!');
-            window.location.href = 'login-admin.html'; // Redireciona para o login
-        });
-    </script>
 </body>
 </html>
