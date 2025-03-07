@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login do Usuário</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCHVoDPPaxYjkjlVfWd5HFYZiORGbR8h0Q",
+            authDomain: "let-log-5faef.firebaseapp.com",
+            projectId: "let-log-5faef",
+            storageBucket: "let-log-5faef.firebasestorage.app",
+            messagingSenderId: "818297522117",
+            appId: "1:818297522117:web:cb311458fb531b273f6dac",
+            measurementId: "G-6XVWCM8MNT"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        document.getElementById('loginUsuarioForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const email = document.getElementById('usuarioEmail').value;
+            const senha = document.getElementById('usuarioSenha').value;
+
+            signInWithEmailAndPassword(auth, email, senha)
+                .then((userCredential) => {
+                    alert('Login realizado com sucesso!');
+                    window.location.href = 'usuario.html';
+                })
+                .catch((error) => {
+                    alert('Email ou senha incorretos!');
+                });
+        });
+    </script>
+</head>
+<body class="login-usuario">
+    <div class="container">
+        <!-- Imagem no topo -->
+        <div class="logo-container">
+            <img src="Logo.jpeg" alt="Logo" class="logo">
+        </div>
+
+        <h2>Login do Usuário</h2>
+        <p>Por favor, faça login para acessar o sistema.</p>
+
+        <form id="loginUsuarioForm">
+            <input type="email" id="usuarioEmail" placeholder="Email" required>
+            <input type="password" id="usuarioSenha" placeholder="Senha" required>
+            <button type="submit">Entrar</button>
+        </form>
+
+        <p>Não tem uma conta? <a href="cadastro-usuario.html">Cadastre-se</a></p>
+    </div>
+</body>
+</html>
