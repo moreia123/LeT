@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro do Usuário</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="user-signup">
+    <div class="container">
+        <h2>Cadastro do Usuário</h2>
+        <form id="cadastroForm">
+            <input type="text" id="usuario" placeholder="Usuário" required>
+            <input type="password" id="senha" placeholder="Senha" required>
+            <button type="submit">Cadastrar</button>
+        </form>
+        <p>Já tem uma conta? <a href="login.html">Faça login</a></p>
+        <a href="index.html">Voltar para a Página Inicial</a>
+    </div>
+
+    <script>
+        document.getElementById('cadastroForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const usuario = document.getElementById('usuario').value;
+            const senha = document.getElementById('senha').value;
+
+            const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+
+            // Verifica se o usuário já existe
+            const usuarioExiste = usuarios.some(user => user.usuario === usuario);
+            if (usuarioExiste) {
+                alert('Usuário já cadastrado!');
+                return;
+            }
+
+            const novoUsuario = { usuario, senha };
+            usuarios.push(novoUsuario);
+            localStorage.setItem('usuarios', JSON.stringify(usuarios));
+
+            alert('Cadastro realizado com sucesso!');
+            window.location.href = 'login.html';
+        });
+    </script>
+</body>
+</html>

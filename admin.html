@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Administrador</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="admin-panel">
+    <div class="container">
+        <h2>Painel do Administrador</h2>
+        <p>Bem-vindo ao painel de controle.</p>
+
+        <!-- Botões de exportação -->
+        <button onclick="exportarParaTxt()">Exportar Dados para TXT</button>
+        <button onclick="exportarParaCsv()">Exportar Dados para CSV</button>
+
+        <!-- Restante do conteúdo -->
+    </div>
+
+    <script>
+        // Funções de exportação
+        function exportarParaTxt() {
+            const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+            const pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+
+            let conteudo = "=== Usuários ===\n";
+            usuarios.forEach((user, index) => {
+                conteudo += `Usuário ${index + 1}: ${user.usuario} | Senha: ${user.senha}\n`;
+            });
+
+            conteudo += "\n=== Pedidos ===\n";
+            pedidos.forEach((pedido, index) => {
+                conteudo += `Pedido ${index + 1}: ${pedido.descricao} | Status: ${pedido.status}\n`;
+            });
+
+            // Cria um arquivo de texto
+            const blob = new Blob([conteudo], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = "dados.txt"; // Nome do arquivo
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function exportarParaCsv() {
+            const usuarios = JSON.parse(localStorage.getItem('usuarios')) || [];
+            const pedidos = JSON.parse(localStorage.getItem('pedidos')) || [];
+
+            let conteudo = "Tipo,Usuário,Senha,Descrição,Status\n"; // Cabeçalho do CSV
+
+            // Adiciona usuários ao CSV
+            usuarios.forEach(user => {
+                conteudo += `Usuário,${user.usuario},${user.senha},,\n`;
+            });
+
+            // Adiciona pedidos ao CSV
+            pedidos.forEach(pedido => {
+                conteudo += `Pedido,,,${pedido.descricao},${pedido.status}\n`;
+            });
+
+            // Cria um arquivo CSV
+            const blob = new Blob([conteudo], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = "dados.csv"; // Nome do arquivo
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

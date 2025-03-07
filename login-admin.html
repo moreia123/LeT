@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login do Administrador</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="admin-login">
+    <div class="container">
+        <h2>Login do Administrador</h2>
+        <form id="loginAdminForm">
+            <input type="text" id="adminUsuario" placeholder="Usuário" required>
+            <input type="password" id="adminSenha" placeholder="Senha" required>
+            <button type="submit">Entrar</button>
+        </form>
+        <p>Não tem uma conta? <a href="admin.html">Cadastre-se</a></p>
+    </div>
+
+    <script>
+        // Verifica se o administrador existe
+        document.getElementById('loginAdminForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const usuario = document.getElementById('adminUsuario').value;
+            const senha = document.getElementById('adminSenha').value;
+
+            const admins = JSON.parse(localStorage.getItem('administradores')) || [];
+            const admin = admins.find(admin => admin.usuario === usuario && admin.senha === senha);
+
+            if (admin) {
+                alert('Login realizado com sucesso!');
+                window.location.href = 'admin.html';
+            } else {
+                alert('Usuário ou senha incorretos!');
+            }
+        });
+    </script>
+</body>
+</html>
