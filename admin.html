@@ -44,4 +44,65 @@
                 const row = tabela.insertRow();
                 row.insertCell().textContent = index + 1;
                 row.insertCell().textContent = pedido.descricao;
-                row.insertCell().textContent = `${pedido.ruaColeta}, ${pedido.numeroColeta} -
+                row.insertCell().textContent = `${pedido.ruaColeta}, ${pedido.numeroColeta} - ${pedido.bairroColeta}`;
+                row.insertCell().textContent = `${pedido.ruaEntrega}, ${pedido.numeroEntrega} - ${pedido.bairroEntrega}`;
+                row.insertCell().textContent = `R$ ${pedido.valor.toFixed(2)}`;
+                row.insertCell().textContent = pedido.status;
+
+                // Botão para marcar como entregue
+                const cellAcao = row.insertCell();
+                if (pedido.status === 'Pendente') {
+                    const botao = document.createElement('button');
+                    botao.textContent = 'Marcar como Entregue';
+                    botao.addEventListener('click', () => marcarComoEntregue(doc.id));
+                    cellAcao.appendChild(botao);
+                } else {
+                    cellAcao.textContent = 'Entregue';
+                }
+            });
+        }
+
+        // Função para marcar pedido como entregue
+        async function marcarComoEntregue(pedidoId) {
+            await updateDoc(doc(db, 'pedidos', pedidoId), {
+                status: 'Entregue'
+            });
+            carregarPedidosAdmin();
+        }
+
+        // Carrega os pedidos ao abrir a página
+        carregarPedidosAdmin();
+    </script>
+</head>
+<body class="admin-panel">
+    <div class="container">
+        <!-- Imagem no topo -->
+        <div class="logo-container">
+            <img src="Logo.jpeg" alt="Logo" class="logo">
+        </div>
+
+        <h2>Painel do Administrador</h2>
+        <p>Bem-vindo ao painel de controle.</p>
+
+        <h3>Todos os Pedidos</h3>
+        <table id="tabelaPedidosAdmin">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Descrição</th>
+                    <th>Local de Coleta</th>
+                    <th>Local de Entrega</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Pedidos serão inseridos aqui via JavaScript -->
+            </tbody>
+        </table>
+
+        <a href="index.html">Voltar para a Página Inicial</a>
+    </div>
+</body>
+</html>
