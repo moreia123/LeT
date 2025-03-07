@@ -5,18 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página do Usuário</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Inclua a API do Google Maps com a biblioteca Places -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=SUA_CHAVE_DA_API&libraries=places"></script>
 </head>
 <body class="user-page">
     <div class="container">
+        <!-- Imagem no topo -->
+        <div class="logo-container">
+            <img src="Logo.jpeg" alt="Logo" class="logo">
+        </div>
+
         <h2>Bem-vindo, <span id="nomeUsuario"></span>!</h2>
         <p>Esta é a página do usuário.</p>
 
         <h3>Calcular Custo de Entrega</h3>
         <form id="formEntrega">
-            <input type="text" id="origem" placeholder="Endereço de Origem" required>
-            <input type="text" id="destino" placeholder="Endereço de Destino" required>
+            <label for="localizacao">Selecione a Localização:</label>
+            <select id="localizacao" required>
+                <option value="">Selecione...</option>
+                <option value="Centro de Manhuaçu">Centro de Manhuaçu - R$ 10,00</option>
+                <option value="Centro de Reduto">Centro de Reduto - R$ 25,00</option>
+                <option value="Zona Rural">Zona Rural (Até 10KM do Centro) - R$ 25,00</option>
+                <option value="Outros">Para demais localizações, consultar valores</option>
+            </select>
             <button type="submit">Calcular Custo</button>
         </form>
 
@@ -30,6 +39,8 @@
                 <tr>
                     <th>ID</th>
                     <th>Descrição</th>
+                    <th>Localização</th>
+                    <th>Valor</th>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -41,6 +52,13 @@
         <h3>Adicionar Novo Pedido</h3>
         <form id="formPedido">
             <input type="text" id="descricao" placeholder="Descrição do Pedido" required>
+            <select id="localizacaoPedido" required>
+                <option value="">Selecione a Localização</option>
+                <option value="Centro de Manhuaçu">Centro de Manhuaçu - R$ 10,00</option>
+                <option value="Centro de Reduto">Centro de Reduto - R$ 25,00</option>
+                <option value="Zona Rural">Zona Rural (Até 10KM do Centro) - R$ 25,00</option>
+                <option value="Outros">Para demais localizações, consultar valores</option>
+            </select>
             <button type="submit">Adicionar Pedido</button>
         </form>
 
@@ -62,6 +80,8 @@
                 const row = tabela.insertRow();
                 row.insertCell().textContent = index + 1;
                 row.insertCell().textContent = pedido.descricao;
+                row.insertCell().textContent = pedido.localizacao;
+                row.insertCell().textContent = `R$ ${pedido.valor.toFixed(2)}`;
                 row.insertCell().textContent = pedido.status;
             });
         }
@@ -70,9 +90,26 @@
         document.getElementById('formPedido').addEventListener('submit', function(event) {
             event.preventDefault();
             const descricao = document.getElementById('descricao').value;
+            const localizacao = document.getElementById('localizacaoPedido').value;
+
+            // Define o valor com base na localização
+            let valor;
+            switch (localizacao) {
+                case 'Centro de Manhuaçu':
+                    valor = 10.00;
+                    break;
+                case 'Centro de Reduto':
+                case 'Zona Rural':
+                    valor = 25.00;
+                    break;
+                default:
+                    valor = 0.00; // Para "Outros"
+            }
 
             const pedido = {
                 descricao: descricao,
+                localizacao: localizacao,
+                valor: valor,
                 status: 'Pendente'
             };
 
@@ -85,69 +122,40 @@
             document.getElementById('descricao').value = ''; // Limpa o campo de descrição
         });
 
-        // Função para calcular a distância e o custo
-        function calcularDistanciaECusto(origem, destino) {
-            const service = new google.maps.DistanceMatrixService();
-
-            service.getDistanceMatrix({
-                origins: [origem],
-                destinations: [destino],
-                travelMode: 'DRIVING',
-                unitSystem: google.maps.UnitSystem.METRIC,
-            }, (response, status) => {
-                if (status === 'OK') {
-                    const distancia = response.rows[0].elements[0].distance.value / 1000; // Distância em KM
-                    const custo = calcularCusto(distancia);
-                    exibirResultado(distancia, custo);
-                } else {
-                    alert('Erro ao calcular a distância. Verifique os endereços.');
-                }
-            });
-        }
-
-        // Função para calcular o custo com base na distância
-        function calcularCusto(distancia) {
-            const custoBase = 10; // R$ 10,00 para os primeiros 4 KM
-            const kmAdicional = Math.max(0, distancia - 4); // KM adicionais após os 4 KM
-            return custoBase + kmAdicional * 1; // R$ 1,00 por KM adicional
-        }
-
-        // Função para exibir o resultado
-        function exibirResultado(distancia, custo) {
-            const resultadoDiv = document.getElementById('resultadoEntrega');
-            resultadoDiv.innerHTML = `
-                <p>Distância: ${distancia.toFixed(2)} KM</p>
-                <p>Custo da Entrega: R$ ${custo.toFixed(2)}</p>
-            `;
-        }
-
-        // Evento de envio do formulário de entrega
+        // Função para calcular o custo com base na localização
         document.getElementById('formEntrega').addEventListener('submit', function(event) {
             event.preventDefault();
-            const origem = document.getElementById('origem').value;
-            const destino = document.getElementById('destino').value;
-            calcularDistanciaECusto(origem, destino);
+            const localizacao = document.getElementById('localizacao').value;
+
+            let valor;
+            switch (localizacao) {
+                case 'Centro de Manhuaçu':
+                    valor = 10.00;
+                    break;
+                case 'Centro de Reduto':
+                case 'Zona Rural':
+                    valor = 25.00;
+                    break;
+                default:
+                    valor = 0.00; // Para "Outros"
+            }
+
+            const resultadoDiv = document.getElementById('resultadoEntrega');
+            if (valor > 0) {
+                resultadoDiv.innerHTML = `
+                    <p>Localização: ${localizacao}</p>
+                    <p>Custo da Entrega: R$ ${valor.toFixed(2)}</p>
+                `;
+            } else {
+                resultadoDiv.innerHTML = `
+                    <p>Localização: ${localizacao}</p>
+                    <p>Para demais localizações, consultar valores.</p>
+                `;
+            }
         });
-
-        // Inicializa o autocompletar para os campos de endereço
-        function initAutocomplete() {
-            const origemInput = document.getElementById('origem');
-            const destinoInput = document.getElementById('destino');
-
-            const autocompleteOrigem = new google.maps.places.Autocomplete(origemInput, {
-                types: ['geocode'], // Restringe a sugestões de endereços físicos
-            });
-
-            const autocompleteDestino = new google.maps.places.Autocomplete(destinoInput, {
-                types: ['geocode'], // Restringe a sugestões de endereços físicos
-            });
-        }
 
         // Carrega os pedidos ao abrir a página
         carregarPedidos();
-
-        // Inicializa o autocompletar quando a API do Google Maps estiver pronta
-        google.maps.event.addDomListener(window, 'load', initAutocomplete);
     </script>
 </body>
 </html>
