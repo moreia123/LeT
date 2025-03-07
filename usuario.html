@@ -173,7 +173,9 @@
         const geocoder = L.Control.Geocoder.nominatim();
         new L.Control.Geocoder({
             defaultMarkGeocode: false,
-            geocoder: geocoder
+            geocoder: geocoder,
+            placeholder: 'Digite um endereço...',
+            errorMessage: 'Endereço não encontrado.'
         })
         .on('markgeocode', function(e) {
             const { name, center } = e.geocode;
