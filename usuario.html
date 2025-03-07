@@ -5,14 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página do Usuário</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- Leaflet JavaScript -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Leaflet Control Geocoder CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-    <!-- Leaflet Control Geocoder JavaScript -->
-    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
     <!-- Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
@@ -54,8 +46,8 @@
                 const row = tabela.insertRow();
                 row.insertCell().textContent = index + 1;
                 row.insertCell().textContent = pedido.descricao;
-                row.insertCell().textContent = `${pedido.ruaColeta}, ${pedido.numeroColeta}`;
-                row.insertCell().textContent = `${pedido.ruaEntrega}, ${pedido.numeroEntrega}`;
+                row.insertCell().textContent = `${pedido.ruaColeta}, ${pedido.numeroColeta}, ${pedido.bairroColeta}, ${pedido.cidadeColeta}`;
+                row.insertCell().textContent = `${pedido.ruaEntrega}, ${pedido.numeroEntrega}, ${pedido.bairroEntrega}, ${pedido.cidadeEntrega}`;
                 row.insertCell().textContent = `R$ ${pedido.valor.toFixed(2)}`;
                 row.insertCell().textContent = pedido.status; // Exibe o status do pedido
             });
@@ -79,36 +71,59 @@
             return data.routes[0].distance / 1000; // Distância em km
         }
 
-        // Função para buscar endereço com Nominatim
-        async function buscarEndereco(query) {
-            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`);
+        // Função para buscar endereço com ViaCEP
+        async function buscarEnderecoPorCEP(cep, tipo) {
+            const response = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
             const data = await response.json();
-            return data;
+
+            if (data.erro) {
+                alert('CEP não encontrado.');
+                return;
+            }
+
+            // Preenche os campos de endereço
+            document.getElementById(`rua${tipo}`).value = data.logradouro;
+            document.getElementById(`bairro${tipo}`).value = data.bairro;
+            document.getElementById(`cidade${tipo}`).value = data.localidade;
         }
 
         // Função para calcular e exibir o valor da entrega
         async function calcularValor() {
-            const ruaColeta = document.getElementById('ruaColetaPedido').value;
-            const numeroColeta = document.getElementById('numeroColetaPedido').value;
-            const ruaEntrega = document.getElementById('ruaEntregaPedido').value;
-            const numeroEntrega = document.getElementById('numeroEntregaPedido').value;
+            const cepColeta = document.getElementById('cepColeta').value;
+            const numeroColeta = document.getElementById('numeroColeta').value;
+            const cepEntrega = document.getElementById('cepEntrega').value;
+            const numeroEntrega = document.getElementById('numeroEntrega').value;
 
-            if (!ruaColeta || !numeroColeta || !ruaEntrega || !numeroEntrega) {
-                alert('Preencha todos os campos de endereço.');
+            if (!cepColeta || !numeroColeta || !cepEntrega || !numeroEntrega) {
+                alert('Preencha todos os campos de CEP e número.');
                 return;
             }
 
-            // Busca as coordenadas dos endereços
-            const enderecoColeta = await buscarEndereco(`${ruaColeta} ${numeroColeta}, Manhuaçu, MG`);
-            const enderecoEntrega = await buscarEndereco(`${ruaEntrega} ${numeroEntrega}, Manhuaçu, MG`);
+            // Busca os endereços completos
+            await buscarEnderecoPorCEP(cepColeta, 'Coleta');
+            await buscarEnderecoPorCEP(cepEntrega, 'Entrega');
 
-            if (enderecoColeta.length === 0 || enderecoEntrega.length === 0) {
+            const ruaColeta = document.getElementById('ruaColeta').value;
+            const cidadeColeta = document.getElementById('cidadeColeta').value;
+            const ruaEntrega = document.getElementById('ruaEntrega').value;
+            const cidadeEntrega = document.getElementById('cidadeEntrega').value;
+
+            if (!ruaColeta || !cidadeColeta || !ruaEntrega || !cidadeEntrega) {
                 alert('Endereço de coleta ou entrega não encontrado.');
                 return;
             }
 
-            const origem = { lat: parseFloat(enderecoColeta[0].lat), lng: parseFloat(enderecoColeta[0].lon) };
-            const destino = { lat: parseFloat(enderecoEntrega[0].lat), lng: parseFloat(enderecoEntrega[0].lon) };
+            // Busca as coordenadas dos endereços
+            const enderecoColeta = await buscarCoordenadas(`${ruaColeta} ${numeroColeta}, ${cidadeColeta}`);
+            const enderecoEntrega = await buscarCoordenadas(`${ruaEntrega} ${numeroEntrega}, ${cidadeEntrega}`);
+
+            if (!enderecoColeta || !enderecoEntrega) {
+                alert('Endereço de coleta ou entrega não encontrado.');
+                return;
+            }
+
+            const origem = { lat: enderecoColeta.lat, lng: enderecoColeta.lon };
+            const destino = { lat: enderecoEntrega.lat, lng: enderecoEntrega.lon };
 
             // Calcula a distância
             const distancia = await calcularDistancia(origem, destino);
@@ -118,26 +133,52 @@
             document.getElementById('valorCalculado').textContent = `Valor da entrega: R$ ${valor.toFixed(2)}`;
         }
 
+        // Função para buscar coordenadas com Nominatim
+        async function buscarCoordenadas(endereco) {
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${endereco}`);
+            const data = await response.json();
+            if (data.length > 0) {
+                return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+            }
+            return null;
+        }
+
         // Função para adicionar pedido
         document.getElementById('formPedido').addEventListener('submit', async function(event) {
             event.preventDefault();
             const descricao = document.getElementById('descricao').value;
-            const ruaColeta = document.getElementById('ruaColetaPedido').value;
-            const numeroColeta = document.getElementById('numeroColetaPedido').value;
-            const ruaEntrega = document.getElementById('ruaEntregaPedido').value;
-            const numeroEntrega = document.getElementById('numeroEntregaPedido').value;
+            const cepColeta = document.getElementById('cepColeta').value;
+            const numeroColeta = document.getElementById('numeroColeta').value;
+            const cepEntrega = document.getElementById('cepEntrega').value;
+            const numeroEntrega = document.getElementById('numeroEntrega').value;
 
-            // Busca as coordenadas dos endereços
-            const enderecoColeta = await buscarEndereco(`${ruaColeta} ${numeroColeta}, Manhuaçu, MG`);
-            const enderecoEntrega = await buscarEndereco(`${ruaEntrega} ${numeroEntrega}, Manhuaçu, MG`);
+            // Busca os endereços completos
+            await buscarEnderecoPorCEP(cepColeta, 'Coleta');
+            await buscarEnderecoPorCEP(cepEntrega, 'Entrega');
 
-            if (enderecoColeta.length === 0 || enderecoEntrega.length === 0) {
+            const ruaColeta = document.getElementById('ruaColeta').value;
+            const bairroColeta = document.getElementById('bairroColeta').value;
+            const cidadeColeta = document.getElementById('cidadeColeta').value;
+            const ruaEntrega = document.getElementById('ruaEntrega').value;
+            const bairroEntrega = document.getElementById('bairroEntrega').value;
+            const cidadeEntrega = document.getElementById('cidadeEntrega').value;
+
+            if (!ruaColeta || !cidadeColeta || !ruaEntrega || !cidadeEntrega) {
                 alert('Endereço de coleta ou entrega não encontrado.');
                 return;
             }
 
-            const origem = { lat: parseFloat(enderecoColeta[0].lat), lng: parseFloat(enderecoColeta[0].lon) };
-            const destino = { lat: parseFloat(enderecoEntrega[0].lat), lng: parseFloat(enderecoEntrega[0].lon) };
+            // Busca as coordenadas dos endereços
+            const enderecoColeta = await buscarCoordenadas(`${ruaColeta} ${numeroColeta}, ${cidadeColeta}`);
+            const enderecoEntrega = await buscarCoordenadas(`${ruaEntrega} ${numeroEntrega}, ${cidadeEntrega}`);
+
+            if (!enderecoColeta || !enderecoEntrega) {
+                alert('Endereço de coleta ou entrega não encontrado.');
+                return;
+            }
+
+            const origem = { lat: enderecoColeta.lat, lng: enderecoColeta.lon };
+            const destino = { lat: enderecoEntrega.lat, lng: enderecoEntrega.lon };
 
             // Calcula a distância
             const distancia = await calcularDistancia(origem, destino);
@@ -147,8 +188,12 @@
                 descricao: descricao,
                 ruaColeta: ruaColeta,
                 numeroColeta: numeroColeta,
+                bairroColeta: bairroColeta,
+                cidadeColeta: cidadeColeta,
                 ruaEntrega: ruaEntrega,
                 numeroEntrega: numeroEntrega,
+                bairroEntrega: bairroEntrega,
+                cidadeEntrega: cidadeEntrega,
                 valor: valor,
                 status: 'Pendente',
                 userId: auth.currentUser.uid
@@ -160,29 +205,6 @@
             document.getElementById('formPedido').reset(); // Limpa o formulário
             document.getElementById('valorCalculado').textContent = ''; // Limpa o valor calculado
         });
-
-        // Inicializa o mapa
-        const map = L.map('map').setView([-20.2578, -42.0331], 13); // Coordenadas de Manhuaçu, MG
-
-        // Adiciona o mapa base do OpenStreetMap
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-
-        // Adiciona o controle de geocodificação (autocompletar)
-        const geocoder = L.Control.Geocoder.nominatim();
-        new L.Control.Geocoder({
-            defaultMarkGeocode: false,
-            geocoder: geocoder,
-            placeholder: 'Digite um endereço...',
-            errorMessage: 'Endereço não encontrado.'
-        })
-        .on('markgeocode', function(e) {
-            const { name, center } = e.geocode;
-            L.marker(center).addTo(map).bindPopup(name).openPopup();
-            map.setView(center, 13);
-        })
-        .addTo(map);
 
         // Carrega os pedidos ao abrir a página
         carregarPedidos();
@@ -201,13 +223,20 @@
         <h3>Adicionar Novo Pedido</h3>
         <form id="formPedido">
             <input type="text" id="descricao" placeholder="Descrição do Pedido" required>
+
             <h4>Endereço de Coleta</h4>
-            <input type="text" id="ruaColetaPedido" placeholder="Rua" required>
-            <input type="text" id="numeroColetaPedido" placeholder="Número" required>
+            <input type="text" id="cepColeta" placeholder="CEP" required>
+            <input type="text" id="ruaColeta" placeholder="Rua" readonly>
+            <input type="text" id="bairroColeta" placeholder="Bairro" readonly>
+            <input type="text" id="cidadeColeta" placeholder="Cidade" readonly>
+            <input type="text" id="numeroColeta" placeholder="Número" required>
 
             <h4>Endereço de Entrega</h4>
-            <input type="text" id="ruaEntregaPedido" placeholder="Rua" required>
-            <input type="text" id="numeroEntregaPedido" placeholder="Número" required>
+            <input type="text" id="cepEntrega" placeholder="CEP" required>
+            <input type="text" id="ruaEntrega" placeholder="Rua" readonly>
+            <input type="text" id="bairroEntrega" placeholder="Bairro" readonly>
+            <input type="text" id="cidadeEntrega" placeholder="Cidade" readonly>
+            <input type="text" id="numeroEntrega" placeholder="Número" required>
 
             <!-- Botão para calcular o valor -->
             <button type="button" onclick="calcularValor()">Calcular Valor</button>
@@ -216,9 +245,6 @@
             <!-- Botão para adicionar pedido -->
             <button type="submit">Adicionar Pedido</button>
         </form>
-
-        <!-- Mapa -->
-        <div id="map" style="height: 300px; width: 100%; margin-top: 20px;"></div>
 
         <h3>Seus Pedidos</h3>
         <table id="tabelaPedidos">
