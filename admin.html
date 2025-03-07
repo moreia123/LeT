@@ -54,7 +54,7 @@
                 if (pedido.status === 'Pendente') {
                     const botao = document.createElement('button');
                     botao.textContent = 'Marcar como Entregue';
-                    botao.addEventListener('click', () => marcarComoEntregue(doc.id, pedido.userId));
+                    botao.addEventListener('click', () => marcarComoEntregue(doc.id));
                     cellAcao.appendChild(botao);
                 } else {
                     cellAcao.textContent = 'Entregue';
@@ -63,39 +63,17 @@
         }
 
         // Função para marcar pedido como entregue
-        async function marcarComoEntregue(pedidoId, userId) {
+        async function marcarComoEntregue(pedidoId) {
             try {
-                // Atualiza o status do pedido
+                // Atualiza o status do pedido no Firestore
                 await updateDoc(doc(db, 'pedidos', pedidoId), {
                     status: 'Entregue'
                 });
-
-                // Envia confirmação por e-mail (requer Firebase Cloud Functions)
-                await enviarEmailConfirmacao(userId, pedidoId);
-
-                alert('Pedido marcado como entregue e e-mail enviado!');
+                alert('Pedido marcado como entregue!');
                 carregarPedidosAdmin(); // Recarrega a lista de pedidos
             } catch (error) {
                 console.error('Erro ao marcar como entregue:', error);
                 alert('Erro ao marcar como entregue.');
-            }
-        }
-
-        // Função para enviar e-mail de confirmação (requer Firebase Cloud Functions)
-        async function enviarEmailConfirmacao(userId, pedidoId) {
-            // Aqui você precisa integrar com o Firebase Cloud Functions
-            // Exemplo de chamada para uma função HTTP do Firebase:
-            const functionUrl = 'https://sua-funcao-cloud-functions.com/enviarEmail';
-            const response = await fetch(functionUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ userId, pedidoId }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Erro ao enviar e-mail.');
             }
         }
 
