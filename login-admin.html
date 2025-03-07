@@ -6,15 +6,16 @@
     <title>Login do Administrador</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body class="admin-login">
+<body class="login-admin">
     <div class="container">
         <h2>Login do Administrador</h2>
+        <p>Por favor, faça login para acessar o painel de controle.</p>
+
         <form id="loginAdminForm">
             <input type="text" id="adminUsuario" placeholder="Usuário" required>
             <input type="password" id="adminSenha" placeholder="Senha" required>
             <button type="submit">Entrar</button>
         </form>
-        <p>Não tem uma conta? <a href="admin.html">Cadastre-se</a></p>
     </div>
 
     <script>
@@ -29,11 +30,27 @@
 
             if (admin) {
                 alert('Login realizado com sucesso!');
-                window.location.href = 'admin.html';
+                window.location.href = 'admin.html'; // Redireciona para o painel do administrador
             } else {
                 alert('Usuário ou senha incorretos!');
             }
         });
+
+        // Cria um administrador padrão se não existir nenhum
+        function criarAdminPadrao() {
+            const admins = JSON.parse(localStorage.getItem('administradores')) || [];
+            if (admins.length === 0) {
+                const adminPadrao = { nome: "Ailton", usuario: "Ailton", senha: "123" };
+                admins.push(adminPadrao);
+                localStorage.setItem('administradores', JSON.stringify(admins));
+            }
+        }
+
+        // Verifica se é a primeira vez que o sistema é acessado
+        const admins = JSON.parse(localStorage.getItem('administradores')) || [];
+        if (admins.length === 0) {
+            window.location.href = 'cadastro-admin.html'; // Redireciona para o cadastro
+        }
     </script>
 </body>
 </html>
