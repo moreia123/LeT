@@ -9,6 +9,10 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- Leaflet JavaScript -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Control Geocoder CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <!-- Leaflet Control Geocoder JavaScript -->
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
     <!-- Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
@@ -68,13 +72,6 @@
             }
         }
 
-        // Função para buscar endereço com Nominatim (autocompletar)
-        async function buscarEndereco(query) {
-            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`);
-            const data = await response.json();
-            return data;
-        }
-
         // Função para calcular distância com OSRM
         async function calcularDistancia(origem, destino) {
             const response = await fetch(`https://router.project-osrm.org/route/v1/driving/${origem.lng},${origem.lat};${destino.lng},${destino.lat}?overview=false`);
@@ -127,6 +124,34 @@
             carregarPedidos(); // Recarrega a lista de pedidos
             document.getElementById('formPedido').reset(); // Limpa o formulário
         });
+
+        // Função para buscar endereço com Nominatim
+        async function buscarEndereco(query) {
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${query}`);
+            const data = await response.json();
+            return data;
+        }
+
+        // Inicializa o mapa
+        const map = L.map('map').setView([-20.3194, -40.3378], 13); // Coordenadas de Vitória, ES
+
+        // Adiciona o mapa base do OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // Adiciona o controle de geocodificação (autocompletar)
+        const geocoder = L.Control.Geocoder.nominatim();
+        new L.Control.Geocoder({
+            defaultMarkGeocode: false,
+            geocoder: geocoder
+        })
+        .on('markgeocode', function(e) {
+            const { name, center } = e.geocode;
+            L.marker(center).addTo(map).bindPopup(name).openPopup();
+            map.setView(center, 13);
+        })
+        .addTo(map);
 
         // Carrega os pedidos ao abrir a página
         carregarPedidos();
