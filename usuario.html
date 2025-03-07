@@ -99,8 +99,8 @@
             }
 
             // Busca as coordenadas dos endereços
-            const enderecoColeta = await buscarEndereco(`${ruaColeta} ${numeroColeta}`);
-            const enderecoEntrega = await buscarEndereco(`${ruaEntrega} ${numeroEntrega}`);
+            const enderecoColeta = await buscarEndereco(`${ruaColeta} ${numeroColeta}, Manhuaçu, MG`);
+            const enderecoEntrega = await buscarEndereco(`${ruaEntrega} ${numeroEntrega}, Manhuaçu, MG`);
 
             if (enderecoColeta.length === 0 || enderecoEntrega.length === 0) {
                 alert('Endereço de coleta ou entrega não encontrado.');
@@ -128,8 +128,8 @@
             const numeroEntrega = document.getElementById('numeroEntregaPedido').value;
 
             // Busca as coordenadas dos endereços
-            const enderecoColeta = await buscarEndereco(`${ruaColeta} ${numeroColeta}`);
-            const enderecoEntrega = await buscarEndereco(`${ruaEntrega} ${numeroEntrega}`);
+            const enderecoColeta = await buscarEndereco(`${ruaColeta} ${numeroColeta}, Manhuaçu, MG`);
+            const enderecoEntrega = await buscarEndereco(`${ruaEntrega} ${numeroEntrega}, Manhuaçu, MG`);
 
             if (enderecoColeta.length === 0 || enderecoEntrega.length === 0) {
                 alert('Endereço de coleta ou entrega não encontrado.');
@@ -162,7 +162,7 @@
         });
 
         // Inicializa o mapa
-        const map = L.map('map').setView([-20.3194, -40.3378], 13); // Coordenadas de Vitória, ES
+        const map = L.map('map').setView([-20.2578, -42.0331], 13); // Coordenadas de Manhuaçu, MG
 
         // Adiciona o mapa base do OpenStreetMap
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
