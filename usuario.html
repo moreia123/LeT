@@ -54,8 +54,8 @@
                 const row = tabela.insertRow();
                 row.insertCell().textContent = index + 1;
                 row.insertCell().textContent = pedido.descricao;
-                row.insertCell().textContent = `${pedido.ruaColeta}, ${pedido.numeroColeta} - ${pedido.bairroColeta}`;
-                row.insertCell().textContent = `${pedido.ruaEntrega}, ${pedido.numeroEntrega} - ${pedido.bairroEntrega}`;
+                row.insertCell().textContent = `${pedido.ruaColeta}, ${pedido.numeroColeta}`;
+                row.insertCell().textContent = `${pedido.ruaEntrega}, ${pedido.numeroEntrega}`;
                 row.insertCell().textContent = `R$ ${pedido.valor.toFixed(2)}`;
                 row.insertCell().textContent = pedido.status; // Exibe o status do pedido
             });
@@ -90,19 +90,17 @@
         async function calcularValor() {
             const ruaColeta = document.getElementById('ruaColetaPedido').value;
             const numeroColeta = document.getElementById('numeroColetaPedido').value;
-            const bairroColeta = document.getElementById('bairroColetaPedido').value;
             const ruaEntrega = document.getElementById('ruaEntregaPedido').value;
             const numeroEntrega = document.getElementById('numeroEntregaPedido').value;
-            const bairroEntrega = document.getElementById('bairroEntregaPedido').value;
 
-            if (!ruaColeta || !numeroColeta || !bairroColeta || !ruaEntrega || !numeroEntrega || !bairroEntrega) {
+            if (!ruaColeta || !numeroColeta || !ruaEntrega || !numeroEntrega) {
                 alert('Preencha todos os campos de endereço.');
                 return;
             }
 
             // Busca as coordenadas dos endereços
-            const enderecoColeta = await buscarEndereco(`${ruaColeta} ${numeroColeta}, ${bairroColeta}`);
-            const enderecoEntrega = await buscarEndereco(`${ruaEntrega} ${numeroEntrega}, ${bairroEntrega}`);
+            const enderecoColeta = await buscarEndereco(`${ruaColeta} ${numeroColeta}`);
+            const enderecoEntrega = await buscarEndereco(`${ruaEntrega} ${numeroEntrega}`);
 
             if (enderecoColeta.length === 0 || enderecoEntrega.length === 0) {
                 alert('Endereço de coleta ou entrega não encontrado.');
@@ -126,14 +124,12 @@
             const descricao = document.getElementById('descricao').value;
             const ruaColeta = document.getElementById('ruaColetaPedido').value;
             const numeroColeta = document.getElementById('numeroColetaPedido').value;
-            const bairroColeta = document.getElementById('bairroColetaPedido').value;
             const ruaEntrega = document.getElementById('ruaEntregaPedido').value;
             const numeroEntrega = document.getElementById('numeroEntregaPedido').value;
-            const bairroEntrega = document.getElementById('bairroEntregaPedido').value;
 
             // Busca as coordenadas dos endereços
-            const enderecoColeta = await buscarEndereco(`${ruaColeta} ${numeroColeta}, ${bairroColeta}`);
-            const enderecoEntrega = await buscarEndereco(`${ruaEntrega} ${numeroEntrega}, ${bairroEntrega}`);
+            const enderecoColeta = await buscarEndereco(`${ruaColeta} ${numeroColeta}`);
+            const enderecoEntrega = await buscarEndereco(`${ruaEntrega} ${numeroEntrega}`);
 
             if (enderecoColeta.length === 0 || enderecoEntrega.length === 0) {
                 alert('Endereço de coleta ou entrega não encontrado.');
@@ -151,10 +147,8 @@
                 descricao: descricao,
                 ruaColeta: ruaColeta,
                 numeroColeta: numeroColeta,
-                bairroColeta: bairroColeta,
                 ruaEntrega: ruaEntrega,
                 numeroEntrega: numeroEntrega,
-                bairroEntrega: bairroEntrega,
                 valor: valor,
                 status: 'Pendente',
                 userId: auth.currentUser.uid
@@ -208,12 +202,10 @@
             <h4>Endereço de Coleta</h4>
             <input type="text" id="ruaColetaPedido" placeholder="Rua" required>
             <input type="text" id="numeroColetaPedido" placeholder="Número" required>
-            <input type="text" id="bairroColetaPedido" placeholder="Bairro" required>
 
             <h4>Endereço de Entrega</h4>
             <input type="text" id="ruaEntregaPedido" placeholder="Rua" required>
             <input type="text" id="numeroEntregaPedido" placeholder="Número" required>
-            <input type="text" id="bairroEntregaPedido" placeholder="Bairro" required>
 
             <!-- Botão para calcular o valor -->
             <button type="button" onclick="calcularValor()">Calcular Valor</button>
@@ -222,6 +214,9 @@
             <!-- Botão para adicionar pedido -->
             <button type="submit">Adicionar Pedido</button>
         </form>
+
+        <!-- Mapa -->
+        <div id="map" style="height: 300px; width: 100%; margin-top: 20px;"></div>
 
         <h3>Seus Pedidos</h3>
         <table id="tabelaPedidos">
