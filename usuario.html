@@ -28,7 +28,9 @@
         // Verifica se o usuário está logado
         onAuthStateChanged(auth, (user) => {
             if (!user) {
-                window.location.href = 'login-admin.html';
+                window.location.href = 'login-usuario.html';
+            } else {
+                document.getElementById('nomeUsuario').textContent = user.email; // Exibe o e-mail do usuário
             }
         });
 
@@ -47,7 +49,7 @@
                 row.insertCell().textContent = `${pedido.ruaColeta}, ${pedido.numeroColeta} - ${pedido.bairroColeta}`;
                 row.insertCell().textContent = `${pedido.ruaEntrega}, ${pedido.numeroEntrega} - ${pedido.bairroEntrega}`;
                 row.insertCell().textContent = `R$ ${pedido.valor.toFixed(2)}`;
-                row.insertCell().textContent = pedido.status;
+                row.insertCell().textContent = pedido.status; // Exibe o status do pedido
             });
         }
 
@@ -130,8 +132,8 @@
 
             await addDoc(collection(db, 'pedidos'), pedido);
             alert('Pedido adicionado com sucesso!');
-            carregarPedidos();
-            document.getElementById('formPedido').reset();
+            carregarPedidos(); // Recarrega a lista de pedidos
+            document.getElementById('formPedido').reset(); // Limpa o formulário
         });
 
         // Função para calcular a distância
