@@ -5,6 +5,71 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página do Usuário</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+</head>
+<body class="user-page">
+    <div class="container">
+        <!-- Logo -->
+        <div class="logo-container">
+            <img src="Logo.jpeg" alt="Logo" class="logo">
+        </div>
+
+        <!-- Saudação -->
+        <h2>Bem-vindo, <span id="nomeUsuario"></span>!</h2>
+        <p>Esta é a página do usuário.</p>
+
+        <!-- Formulário de Novo Pedido -->
+        <h3>Adicionar Novo Pedido</h3>
+        <form id="formPedido">
+            <!-- Descrição do Pedido -->
+            <input type="text" id="descricao" placeholder="Descrição do Pedido" required>
+
+            <!-- Endereço de Coleta -->
+            <h4>Endereço de Coleta</h4>
+            <input type="text" id="cepColeta" placeholder="CEP" required onblur="pesquisacep(this.value, 'Coleta')">
+            <input type="text" id="ruaColeta" placeholder="Rua" readonly>
+            <input type="text" id="bairroColeta" placeholder="Bairro" readonly>
+            <input type="text" id="cidadeColeta" placeholder="Cidade" readonly>
+            <input type="text" id="numeroColeta" placeholder="Número" required>
+
+            <!-- Endereço de Entrega -->
+            <h4>Endereço de Entrega</h4>
+            <input type="text" id="cepEntrega" placeholder="CEP" required onblur="pesquisacep(this.value, 'Entrega')">
+            <input type="text" id="ruaEntrega" placeholder="Rua" readonly>
+            <input type="text" id="bairroEntrega" placeholder="Bairro" readonly>
+            <input type="text" id="cidadeEntrega" placeholder="Cidade" readonly>
+            <input type="text" id="numeroEntrega" placeholder="Número" required>
+
+            <!-- Botão para calcular o valor -->
+            <button type="button" onclick="calcularValor()">Calcular Valor</button>
+            <p id="valorCalculado" style="font-weight: bold; margin-top: 10px;"></p>
+
+            <!-- Botão para adicionar pedido (inicialmente oculto) -->
+            <button type="button" id="btnAdicionarPedido" style="display: none;">Adicionar Pedido</button>
+        </form>
+
+        <!-- Lista de Pedidos -->
+        <h3>Seus Pedidos</h3>
+        <table id="tabelaPedidos">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Descrição</th>
+                    <th>Local de Coleta</th>
+                    <th>Local de Entrega</th>
+                    <th>Valor</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Pedidos serão inseridos aqui via JavaScript -->
+            </tbody>
+        </table>
+
+        <!-- Link para voltar à página inicial -->
+        <a href="index.html">Voltar para a Página Inicial</a>
+    </div>
+
     <!-- Firebase -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
@@ -233,61 +298,5 @@
             meu_callback(conteudo, 'Entrega');
         }
     </script>
-</head>
-<body class="user-page">
-    <div class="container">
-        <!-- Imagem no topo -->
-        <div class="logo-container">
-            <img src="Logo.jpeg" alt="Logo" class="logo">
-        </div>
-
-        <h2>Bem-vindo, <span id="nomeUsuario"></span>!</h2>
-        <p>Esta é a página do usuário.</p>
-
-        <h3>Adicionar Novo Pedido</h3>
-        <form id="formPedido">
-            <input type="text" id="descricao" placeholder="Descrição do Pedido" required>
-
-            <h4>Endereço de Coleta</h4>
-            <input type="text" id="cepColeta" placeholder="CEP" required onblur="pesquisacep(this.value, 'Coleta')">
-            <input type="text" id="ruaColeta" placeholder="Rua" readonly>
-            <input type="text" id="bairroColeta" placeholder="Bairro" readonly>
-            <input type="text" id="cidadeColeta" placeholder="Cidade" readonly>
-            <input type="text" id="numeroColeta" placeholder="Número" required>
-
-            <h4>Endereço de Entrega</h4>
-            <input type="text" id="cepEntrega" placeholder="CEP" required onblur="pesquisacep(this.value, 'Entrega')">
-            <input type="text" id="ruaEntrega" placeholder="Rua" readonly>
-            <input type="text" id="bairroEntrega" placeholder="Bairro" readonly>
-            <input type="text" id="cidadeEntrega" placeholder="Cidade" readonly>
-            <input type="text" id="numeroEntrega" placeholder="Número" required>
-
-            <!-- Botão para calcular o valor -->
-            <button type="button" onclick="calcularValor()">Calcular Valor</button>
-            <p id="valorCalculado" style="font-weight: bold; margin-top: 10px;"></p>
-
-            <!-- Botão para adicionar pedido (inicialmente oculto) -->
-            <button type="button" id="btnAdicionarPedido" style="display: none;">Adicionar Pedido</button>
-        </form>
-
-        <h3>Seus Pedidos</h3>
-        <table id="tabelaPedidos">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Descrição</th>
-                    <th>Local de Coleta</th>
-                    <th>Local de Entrega</th>
-                    <th>Valor</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Pedidos serão inseridos aqui via JavaScript -->
-            </tbody>
-        </table>
-
-        <a href="index.html">Voltar para a Página Inicial</a>
-    </div>
 </body>
 </html>
