@@ -114,6 +114,13 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
+        // Função para gerar um ID numérico único
+        async function gerarIdNumerico() {
+            const timestamp = Date.now(); // Usa o timestamp atual
+            const randomNumber = Math.floor(Math.random() * 1000); // Adiciona um número aleatório para garantir unicidade
+            return `${timestamp}${randomNumber}`;
+        }
+
         // Verifica se o usuário está logado
         onAuthStateChanged(auth, (user) => {
             if (!user) {
@@ -140,7 +147,7 @@
             querySnapshot.forEach((doc) => {
                 const pedido = doc.data();
                 const row = tabela.insertRow();
-                row.insertCell().textContent = doc.id; // Usa o ID do documento
+                row.insertCell().textContent = pedido.idNumerico; // Exibe o ID numérico
                 row.insertCell().textContent = pedido.descricao;
                 row.insertCell().textContent = `${pedido.ruaColeta}, ${pedido.numeroColeta}, ${pedido.bairroColeta}, ${pedido.cidadeColeta}`;
                 row.insertCell().textContent = `${pedido.ruaEntrega}, ${pedido.numeroEntrega}, ${pedido.bairroEntrega}, ${pedido.cidadeEntrega}`;
@@ -153,7 +160,7 @@
         function calcularValorEntrega(distancia) {
             const valorBase = 10.00;
             const distanciaKm = parseFloat(distancia);
-            return distanciaKm <= 4 ? valorBase : valorBase + (distanciaKm - 4) * 2.00;
+            return distanciaKm <= 5 ? valorBase : valorBase + (distanciaKm - 5) * 3.00;
         }
 
         // Função para calcular distância com OSRM
@@ -257,7 +264,11 @@
                 const distancia = await calcularDistancia(coordenadasColeta, coordenadasEntrega);
                 const valor = calcularValorEntrega(distancia);
 
+                // Gera um ID numérico único
+                const idNumerico = await gerarIdNumerico();
+
                 const pedido = {
+                    idNumerico: idNumerico, // Adiciona o ID numérico ao pedido
                     descricao: descricao,
                     ruaColeta: document.getElementById('ruaColeta').value,
                     numeroColeta: numeroColeta,
