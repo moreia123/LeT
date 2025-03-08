@@ -76,7 +76,7 @@
         import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
         const firebaseConfig = {
-            apiKey: "AIzaSyCHVoDPPaxYjkjlVfWd5HFYZiORGbR8h0Q",
+           apiKey: "AIzaSyCHVoDPPaxYjkjlVfWd5HFYZiORGbR8h0Q",
             authDomain: "let-log-5faef.firebaseapp.com",
             projectId: "let-log-5faef",
             storageBucket: "let-log-5faef.firebasestorage.app",
@@ -144,50 +144,72 @@
 
         // Função para buscar coordenadas com Nominatim
         async function buscarCoordenadas(endereco) {
-            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(endereco)}`);
-            const data = await response.json();
-            if (data.length > 0) {
-                return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
-            } else {
-                throw new Error('Endereço não encontrado.');
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(endereco)}`);
+                const data = await response.json();
+
+                // Verifica se a API retornou resultados
+                if (data.length > 0) {
+                    return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+                } else {
+                    throw new Error('Endereço não encontrado.');
+                }
+            } catch (error) {
+                console.error('Erro ao buscar coordenadas:', error);
+                throw new Error('Erro ao buscar coordenadas. Verifique o endereço e tente novamente.');
             }
         }
 
         // Função para calcular o valor automaticamente
         window.calcularValorAutomatico = async function() {
             try {
+                // Exibe mensagem de carregamento
                 document.getElementById('mensagemCarregamento').style.display = 'block';
+                document.getElementById('valorCalculado').textContent = '';
+                document.getElementById('btnAdicionarPedido').style.display = 'none';
+
+                // Obtém os valores dos campos
                 const cepColeta = document.getElementById('cepColeta').value;
                 const numeroColeta = document.getElementById('numeroColeta').value;
                 const cepEntrega = document.getElementById('cepEntrega').value;
                 const numeroEntrega = document.getElementById('numeroEntrega').value;
 
+                // Verifica se todos os campos necessários estão preenchidos
                 if (!cepColeta || !numeroColeta || !cepEntrega || !numeroEntrega) {
-                    document.getElementById('valorCalculado').textContent = '';
-                    document.getElementById('btnAdicionarPedido').style.display = 'none';
+                    alert('Preencha todos os campos obrigatórios.');
                     return;
                 }
 
+                // Monta os endereços completos
                 const enderecoColeta = `${document.getElementById('ruaColeta').value} ${numeroColeta}, ${document.getElementById('bairroColeta').value}, ${document.getElementById('cidadeColeta').value}`;
                 const enderecoEntrega = `${document.getElementById('ruaEntrega').value} ${numeroEntrega}, ${document.getElementById('bairroEntrega').value}, ${document.getElementById('cidadeEntrega').value}`;
 
+                console.log('Endereço de Coleta:', enderecoColeta);
+                console.log('Endereço de Entrega:', enderecoEntrega);
+
+                // Busca as coordenadas dos endereços
                 const coordenadasColeta = await buscarCoordenadas(enderecoColeta);
                 const coordenadasEntrega = await buscarCoordenadas(enderecoEntrega);
 
-                if (!coordenadasColeta || !coordenadasEntrega) {
-                    alert('Endereço de coleta ou entrega não encontrado.');
-                    return;
-                }
+                console.log('Coordenadas de Coleta:', coordenadasColeta);
+                console.log('Coordenadas de Entrega:', coordenadasEntrega);
 
+                // Calcula a distância entre os endereços
                 const distancia = await calcularDistancia(coordenadasColeta, coordenadasEntrega);
-                const valor = calcularValorEntrega(distancia);
+                console.log('Distância calculada:', distancia);
 
+                // Calcula o valor da entrega
+                const valor = calcularValorEntrega(distancia);
+                console.log('Valor calculado:', valor);
+
+                // Exibe o valor calculado
                 document.getElementById('valorCalculado').textContent = `Valor da entrega: R$ ${valor.toFixed(2)}`;
                 document.getElementById('btnAdicionarPedido').style.display = 'block';
             } catch (error) {
                 console.error('Erro ao calcular valor:', error);
-                alert('Ocorreu um erro ao calcular o valor. Verifique o console para mais detalhes.');
+                alert('Erro ao calcular o valor. Verifique os endereços e tente novamente.');
             } finally {
+                // Oculta a mensagem de carregamento
                 document.getElementById('mensagemCarregamento').style.display = 'none';
             }
         };
