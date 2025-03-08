@@ -5,6 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página do Usuário</title>
     <link rel="stylesheet" href="styles.css">
+    <!-- Adicionando Font Awesome para ícones -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Estilos para o ícone de carregamento */
+        .spinner {
+            display: none;
+            margin-left: 10px;
+        }
+
+        .success-message {
+            color: green;
+            font-weight: bold;
+            display: none;
+        }
+
+        .error-message {
+            color: red;
+            font-weight: bold;
+            display: none;
+        }
+    </style>
 </head>
 <body class="user-page">
     <div class="container">
@@ -41,7 +62,11 @@
 
             <!-- Exibição do valor calculado -->
             <p id="valorCalculado" style="font-weight: bold; margin-top: 10px;"></p>
-            <p id="mensagemCarregamento" style="display: none;">Calculando valor...</p>
+            <p id="mensagemCarregamento" style="display: none;">
+                <i class="fas fa-spinner fa-spin spinner"></i> Calculando valor...
+            </p>
+            <p id="successMessage" class="success-message">Pedido adicionado com sucesso!</p>
+            <p id="errorMessage" class="error-message"></p>
 
             <!-- Botão para adicionar pedido (inicialmente oculto) -->
             <button type="button" id="btnAdicionarPedido" style="display: none;">Adicionar Pedido</button>
@@ -76,7 +101,7 @@
         import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
         const firebaseConfig = {
-           apiKey: "AIzaSyCHVoDPPaxYjkjlVfWd5HFYZiORGbR8h0Q",
+             apiKey: "AIzaSyCHVoDPPaxYjkjlVfWd5HFYZiORGbR8h0Q",
             authDomain: "let-log-5faef.firebaseapp.com",
             projectId: "let-log-5faef",
             storageBucket: "let-log-5faef.firebasestorage.app",
@@ -167,6 +192,8 @@
                 document.getElementById('mensagemCarregamento').style.display = 'block';
                 document.getElementById('valorCalculado').textContent = '';
                 document.getElementById('btnAdicionarPedido').style.display = 'none';
+                document.getElementById('successMessage').style.display = 'none';
+                document.getElementById('errorMessage').style.display = 'none';
 
                 // Obtém os valores dos campos
                 const cepColeta = document.getElementById('cepColeta').value;
@@ -207,7 +234,8 @@
                 document.getElementById('btnAdicionarPedido').style.display = 'block';
             } catch (error) {
                 console.error('Erro ao calcular valor:', error);
-                alert('Erro ao calcular o valor. Verifique os endereços e tente novamente.');
+                document.getElementById('errorMessage').textContent = 'Erro ao calcular o valor. Verifique os endereços e tente novamente.';
+                document.getElementById('errorMessage').style.display = 'block';
             } finally {
                 // Oculta a mensagem de carregamento
                 document.getElementById('mensagemCarregamento').style.display = 'none';
@@ -217,44 +245,50 @@
         // Função para adicionar pedido
         document.getElementById('btnAdicionarPedido').addEventListener('click', async function(event) {
             event.preventDefault();
-            const descricao = document.getElementById('descricao').value;
-            const cepColeta = document.getElementById('cepColeta').value;
-            const numeroColeta = document.getElementById('numeroColeta').value;
-            const cepEntrega = document.getElementById('cepEntrega').value;
-            const numeroEntrega = document.getElementById('numeroEntrega').value;
+            try {
+                const descricao = document.getElementById('descricao').value;
+                const cepColeta = document.getElementById('cepColeta').value;
+                const numeroColeta = document.getElementById('numeroColeta').value;
+                const cepEntrega = document.getElementById('cepEntrega').value;
+                const numeroEntrega = document.getElementById('numeroEntrega').value;
 
-            const coordenadasColeta = await buscarCoordenadas(`${document.getElementById('ruaColeta').value} ${numeroColeta}, ${document.getElementById('cidadeColeta').value}`);
-            const coordenadasEntrega = await buscarCoordenadas(`${document.getElementById('ruaEntrega').value} ${numeroEntrega}, ${document.getElementById('cidadeEntrega').value}`);
+                const coordenadasColeta = await buscarCoordenadas(`${document.getElementById('ruaColeta').value} ${numeroColeta}, ${document.getElementById('cidadeColeta').value}`);
+                const coordenadasEntrega = await buscarCoordenadas(`${document.getElementById('ruaEntrega').value} ${numeroEntrega}, ${document.getElementById('cidadeEntrega').value}`);
 
-            if (!coordenadasColeta || !coordenadasEntrega) {
-                alert('Endereço de coleta ou entrega não encontrado.');
-                return;
+                if (!coordenadasColeta || !coordenadasEntrega) {
+                    alert('Endereço de coleta ou entrega não encontrado.');
+                    return;
+                }
+
+                const distancia = await calcularDistancia(coordenadasColeta, coordenadasEntrega);
+                const valor = calcularValorEntrega(distancia);
+
+                const pedido = {
+                    descricao: descricao,
+                    ruaColeta: document.getElementById('ruaColeta').value,
+                    numeroColeta: numeroColeta,
+                    bairroColeta: document.getElementById('bairroColeta').value,
+                    cidadeColeta: document.getElementById('cidadeColeta').value,
+                    ruaEntrega: document.getElementById('ruaEntrega').value,
+                    numeroEntrega: numeroEntrega,
+                    bairroEntrega: document.getElementById('bairroEntrega').value,
+                    cidadeEntrega: document.getElementById('cidadeEntrega').value,
+                    valor: valor,
+                    status: 'Pendente',
+                    userId: auth.currentUser.uid
+                };
+
+                await addDoc(collection(db, 'pedidos'), pedido);
+                document.getElementById('successMessage').style.display = 'block';
+                carregarPedidos();
+                document.getElementById('formPedido').reset();
+                document.getElementById('valorCalculado').textContent = '';
+                document.getElementById('btnAdicionarPedido').style.display = 'none';
+            } catch (error) {
+                console.error('Erro ao adicionar pedido:', error);
+                document.getElementById('errorMessage').textContent = 'Erro ao adicionar pedido. Tente novamente.';
+                document.getElementById('errorMessage').style.display = 'block';
             }
-
-            const distancia = await calcularDistancia(coordenadasColeta, coordenadasEntrega);
-            const valor = calcularValorEntrega(distancia);
-
-            const pedido = {
-                descricao: descricao,
-                ruaColeta: document.getElementById('ruaColeta').value,
-                numeroColeta: numeroColeta,
-                bairroColeta: document.getElementById('bairroColeta').value,
-                cidadeColeta: document.getElementById('cidadeColeta').value,
-                ruaEntrega: document.getElementById('ruaEntrega').value,
-                numeroEntrega: numeroEntrega,
-                bairroEntrega: document.getElementById('bairroEntrega').value,
-                cidadeEntrega: document.getElementById('cidadeEntrega').value,
-                valor: valor,
-                status: 'Pendente',
-                userId: auth.currentUser.uid
-            };
-
-            await addDoc(collection(db, 'pedidos'), pedido);
-            alert('Pedido adicionado com sucesso!');
-            carregarPedidos();
-            document.getElementById('formPedido').reset();
-            document.getElementById('valorCalculado').textContent = '';
-            document.getElementById('btnAdicionarPedido').style.display = 'none';
         });
     </script>
 
