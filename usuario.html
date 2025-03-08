@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página do Usuário</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css"> <!-- Seu CSS externo -->
 </head>
 <body class="user-page">
     <div class="container">
@@ -29,7 +29,7 @@
             <input type="text" id="ruaColeta" placeholder="Rua" readonly>
             <input type="text" id="bairroColeta" placeholder="Bairro" readonly>
             <input type="text" id="cidadeColeta" placeholder="Cidade" readonly>
-            <input type="text" id="numeroColeta" placeholder="Número" required>
+            <input type="text" id="numeroColeta" placeholder="Número" required oninput="calcularValorAutomatico()">
 
             <!-- Endereço de Entrega -->
             <h4>Endereço de Entrega</h4>
@@ -37,10 +37,9 @@
             <input type="text" id="ruaEntrega" placeholder="Rua" readonly>
             <input type="text" id="bairroEntrega" placeholder="Bairro" readonly>
             <input type="text" id="cidadeEntrega" placeholder="Cidade" readonly>
-            <input type="text" id="numeroEntrega" placeholder="Número" required>
+            <input type="text" id="numeroEntrega" placeholder="Número" required oninput="calcularValorAutomatico()">
 
-            <!-- Botão para calcular o valor -->
-            <button type="button" onclick="calcularValor()">Calcular Valor</button>
+            <!-- Exibição do valor calculado -->
             <p id="valorCalculado" style="font-weight: bold; margin-top: 10px;"></p>
 
             <!-- Botão para adicionar pedido (inicialmente oculto) -->
@@ -145,16 +144,18 @@
             return null;
         }
 
-        // Função para calcular e exibir o valor da entrega
-        async function calcularValor() {
+        // Função para calcular o valor automaticamente
+        async function calcularValorAutomatico() {
             try {
                 const cepColeta = document.getElementById('cepColeta').value;
                 const numeroColeta = document.getElementById('numeroColeta').value;
                 const cepEntrega = document.getElementById('cepEntrega').value;
                 const numeroEntrega = document.getElementById('numeroEntrega').value;
 
+                // Verifica se todos os campos necessários estão preenchidos
                 if (!cepColeta || !numeroColeta || !cepEntrega || !numeroEntrega) {
-                    alert('Preencha todos os campos de CEP e número.');
+                    document.getElementById('valorCalculado').textContent = ''; // Limpa o valor calculado
+                    document.getElementById('btnAdicionarPedido').style.display = 'none'; // Oculta o botão
                     return;
                 }
 
