@@ -101,7 +101,7 @@
         import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
         const firebaseConfig = {
-             apiKey: "AIzaSyCHVoDPPaxYjkjlVfWd5HFYZiORGbR8h0Q",
+            apiKey: "AIzaSyCHVoDPPaxYjkjlVfWd5HFYZiORGbR8h0Q",
             authDomain: "let-log-5faef.firebaseapp.com",
             projectId: "let-log-5faef",
             storageBucket: "let-log-5faef.firebasestorage.app",
@@ -137,10 +137,10 @@
 
             const q = query(collection(db, 'pedidos'), where('userId', '==', user.uid));
             const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((doc, index) => {
+            querySnapshot.forEach((doc) => {
                 const pedido = doc.data();
                 const row = tabela.insertRow();
-                row.insertCell().textContent = index + 1;
+                row.insertCell().textContent = doc.id; // Usa o ID do documento
                 row.insertCell().textContent = pedido.descricao;
                 row.insertCell().textContent = `${pedido.ruaColeta}, ${pedido.numeroColeta}, ${pedido.bairroColeta}, ${pedido.cidadeColeta}`;
                 row.insertCell().textContent = `${pedido.ruaEntrega}, ${pedido.numeroEntrega}, ${pedido.bairroEntrega}, ${pedido.cidadeEntrega}`;
@@ -200,12 +200,6 @@
                 const numeroColeta = document.getElementById('numeroColeta').value;
                 const cepEntrega = document.getElementById('cepEntrega').value;
                 const numeroEntrega = document.getElementById('numeroEntrega').value;
-
-                // Verifica se todos os campos necessários estão preenchidos
-                if (!cepColeta || !numeroColeta || !cepEntrega || !numeroEntrega) {
-                    alert('Preencha todos os campos obrigatórios.');
-                    return;
-                }
 
                 // Monta os endereços completos
                 const enderecoColeta = `${document.getElementById('ruaColeta').value} ${numeroColeta}, ${document.getElementById('bairroColeta').value}, ${document.getElementById('cidadeColeta').value}`;
