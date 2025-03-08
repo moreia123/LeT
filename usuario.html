@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Página do Usuário</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
 </head>
 <body class="user-page">
     <div class="container">
@@ -159,9 +158,13 @@
                     return;
                 }
 
+                // Monta o endereço completo de coleta e entrega
+                const enderecoColeta = `${document.getElementById('ruaColeta').value} ${numeroColeta}, ${document.getElementById('bairroColeta').value}, ${document.getElementById('cidadeColeta').value}`;
+                const enderecoEntrega = `${document.getElementById('ruaEntrega').value} ${numeroEntrega}, ${document.getElementById('bairroEntrega').value}, ${document.getElementById('cidadeEntrega').value}`;
+
                 // Busca as coordenadas dos endereços
-                const coordenadasColeta = await buscarCoordenadas(`${document.getElementById('ruaColeta').value} ${numeroColeta}, ${document.getElementById('cidadeColeta').value}`);
-                const coordenadasEntrega = await buscarCoordenadas(`${document.getElementById('ruaEntrega').value} ${numeroEntrega}, ${document.getElementById('cidadeEntrega').value}`);
+                const coordenadasColeta = await buscarCoordenadas(enderecoColeta);
+                const coordenadasEntrega = await buscarCoordenadas(enderecoEntrega);
 
                 if (!coordenadasColeta || !coordenadasEntrega) {
                     alert('Endereço de coleta ou entrega não encontrado.');
